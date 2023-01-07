@@ -9,31 +9,6 @@ pub struct Killzone;
 #[derive(Component, Deref, DerefMut)]
 pub struct AnimationTimer(pub Timer);
 
-#[derive(Component, Debug)]
-pub struct Projectile {
-  pub damage: f32,
-}
-
-#[derive(Component, Debug)]
-pub struct Gun {
-  pub cooldown: Timer,
-}
-
-#[derive(Component, Debug)]
-pub struct LightningGun {
-  pub cooldown: Timer,
-}
-
-#[derive(Component, Debug)]
-pub struct LinkGun {
-  pub cooldown: Timer,
-}
-
-#[derive(Component, Debug)]
-pub struct Link {
-  pub damage: f32,
-}
-
 #[derive(Component)]
 pub struct ExpirationTimer(pub Timer);
 

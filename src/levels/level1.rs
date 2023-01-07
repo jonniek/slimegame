@@ -3,7 +3,8 @@ use crate::components::*;
 use crate::enemy::*;
 use crate::player::*;
 use crate::systems;
-use crate::{despawn_screen, Action, GameData, GameState};
+use crate::weapons;
+use crate::{despawn_screen, Action, DamageEvent, GameData, GameState};
 
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::FillMode;
@@ -17,22 +18,22 @@ impl Plugin for Level1Plugin {
   fn build(&self, app: &mut App) {
     app
       .add_system_set(SystemSet::on_enter(GameState::Level1).with_system(init))
-      .add_event::<systems::DamageEvent>()
+      .add_event::<DamageEvent>()
       .add_system_set(
         SystemSet::on_update(GameState::Level1)
           .with_system(systems::clean_up_expired)
           .with_system(systems::animate_sprite)
           .with_system(player_movement)
           .with_system(camera::follow_camera.after(player_movement))
-          .with_system(systems::spawn_projectiles)
-          .with_system(systems::spawn_lightning)
-          .with_system(systems::spawn_link)
-          .with_system(systems::update_link.after(systems::spawn_link))
-          .with_system(systems::kill_enemy)
-          .with_system(systems::handle_laser_collision)
+          .with_system(weapons::gun::spawn_projectiles)
+          .with_system(weapons::lightning::spawn_lightning)
+          .with_system(weapons::laser::spawn_laser)
+          .with_system(weapons::laser::update_laser.after(weapons::laser::spawn_laser))
+          .with_system(weapons::laser::handle_laser_collision)
           .with_system(systems::handle_damage_event)
           .with_system(enemy_movement)
           .with_system(generic_spawner)
+          .with_system(kill_enemy)
           .with_system(systems::handle_collision)
           .with_system(end_condition),
       )

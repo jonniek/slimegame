@@ -1,4 +1,7 @@
 use crate::components::*;
+use crate::weapons::gun::*;
+use crate::weapons::laser::*;
+use crate::weapons::lightning::*;
 use crate::Action;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
@@ -59,7 +62,7 @@ pub fn create_player(
         Player::Two => {
           parent.spawn((
             OnGameScreen,
-            LinkGun {
+            LaserGun {
               cooldown: Timer::from_seconds(8.0, TimerMode::Once),
             },
             SpriteBundle {

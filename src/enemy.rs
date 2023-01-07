@@ -1,5 +1,6 @@
 use crate::components::*;
 use crate::player::Player;
+use crate::GameData;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
@@ -161,6 +162,19 @@ pub fn enemy_movement(
         velocity.linvel.x = x;
         velocity.linvel.y = y;
       }
+    }
+  }
+}
+
+pub fn kill_enemy(
+  mut commands: Commands,
+  enemies: Query<(Entity, &Health), With<Enemy>>,
+  mut state: ResMut<GameData>,
+) {
+  for (entity, health) in enemies.iter() {
+    if health.current_health <= 0.0 {
+      commands.entity(entity).despawn();
+      state.score += 1;
     }
   }
 }

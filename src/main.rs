@@ -11,6 +11,7 @@ mod levels;
 mod menu;
 mod player;
 mod systems;
+mod weapons;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {
@@ -36,6 +37,11 @@ pub struct GameData {
 pub enum Action {
   Move,
   Attack,
+}
+
+pub struct DamageEvent {
+  entity: Entity,
+  damage: f32,
 }
 
 fn main() {

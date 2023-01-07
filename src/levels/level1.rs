@@ -1,5 +1,6 @@
 use crate::components::*;
 use crate::player::*;
+use crate::camera;
 use crate::systems;
 use crate::{despawn_screen, Action, GameData, GameState};
 
@@ -21,7 +22,7 @@ impl Plugin for Level1Plugin {
           .with_system(systems::clean_up_expired)
           .with_system(systems::animate_sprite)
           .with_system(player_movement)
-          .with_system(systems::follow_camera.after(player_movement))
+          .with_system(camera::follow_camera.after(player_movement))
           .with_system(systems::enemy_movement)
           .with_system(systems::spawn_projectiles)
           .with_system(systems::spawn_lightning)

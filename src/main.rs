@@ -9,6 +9,7 @@ mod levels;
 mod menu;
 mod player;
 mod systems;
+mod camera;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {
@@ -53,7 +54,7 @@ fn main() {
     .insert_resource(ClearColor(Color::rgb(0.7, 0.6, 0.5)))
     // .add_plugin(RapierDebugRenderPlugin::default())
     .init_resource::<GameData>()
-    .add_startup_system(systems::setup_camera)
+    .add_startup_system(camera::setup_camera)
     .add_system(bevy::window::close_on_esc)
     .add_state(GameState::Menu)
     .add_plugin(ShapePlugin)

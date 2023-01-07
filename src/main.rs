@@ -3,13 +3,14 @@ use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
 
+mod camera;
 mod components;
+mod enemy;
 mod level_select;
 mod levels;
 mod menu;
 mod player;
 mod systems;
-mod camera;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {

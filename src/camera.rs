@@ -1,11 +1,10 @@
-use bevy::prelude::*;
 use crate::player::Player;
 use crate::GameData;
+use bevy::prelude::*;
 
 pub fn setup_camera(mut commands: Commands) {
   commands.spawn(Camera2dBundle::default());
 }
-
 
 pub fn follow_camera(
   mut camera_query: Query<

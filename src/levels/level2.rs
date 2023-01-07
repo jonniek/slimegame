@@ -1,6 +1,7 @@
-use crate::components::*;
-use crate::player::*;
 use crate::camera;
+use crate::components::*;
+use crate::enemy::*;
+use crate::player::*;
 use crate::systems;
 use crate::{despawn_screen, Action, GameData, GameState};
 
@@ -23,7 +24,6 @@ impl Plugin for Level2Plugin {
           .with_system(systems::animate_sprite)
           .with_system(player_movement)
           .with_system(camera::follow_camera.after(player_movement))
-          .with_system(systems::enemy_movement)
           .with_system(systems::spawn_projectiles)
           .with_system(systems::spawn_lightning)
           .with_system(systems::spawn_link)
@@ -31,8 +31,8 @@ impl Plugin for Level2Plugin {
           .with_system(systems::kill_enemy)
           .with_system(systems::handle_laser_collision)
           .with_system(systems::handle_damage_event)
-          .with_system(systems::enemy_movement)
-          .with_system(systems::generic_spawner)
+          .with_system(enemy_movement)
+          .with_system(generic_spawner)
           .with_system(systems::handle_collision)
           .with_system(end_condition),
       )

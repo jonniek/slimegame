@@ -1,5 +1,4 @@
 use crate::components::*;
-use crate::game::OnGameScreen;
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::FillMode;
 use bevy_prototype_lyon::prelude::*;
@@ -12,236 +11,6 @@ use super::{Action, GameData, GameState};
 
 pub fn setup_camera(mut commands: Commands) {
   commands.spawn(Camera2dBundle::default());
-}
-
-pub fn setup_graphics(
-  mut commands: Commands,
-  asset_server: Res<AssetServer>,
-  mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-  mut state: ResMut<GameData>,
-) {
-  state.score = 0;
-  state.camera_pos = Vec2::default();
-
-  let texture_handle = asset_server.load("player_96x32.png");
-  let texture_atlas =
-    TextureAtlas::from_grid(texture_handle, Vec2::new(32.0, 32.0), 3, 1, None, None);
-  let texture_atlas_handle = texture_atlases.add(texture_atlas);
-
-  let texture_handle_enemy = asset_server.load("enemy_96x32.png");
-  let texture_atlas_enemy = TextureAtlas::from_grid(
-    texture_handle_enemy,
-    Vec2::new(32.0, 32.0),
-    3,
-    1,
-    None,
-    None,
-  );
-  let texture_atlas_handle_enemy = texture_atlases.add(texture_atlas_enemy);
-
-  let texture_handle_enemy2 = asset_server.load("enemy_2_96x32.png");
-  let texture_atlas_enemy2 = TextureAtlas::from_grid(
-    texture_handle_enemy2,
-    Vec2::new(32.0, 32.0),
-    3,
-    1,
-    None,
-    None,
-  );
-  let texture_atlas_handle_enemy2 = texture_atlases.add(texture_atlas_enemy2);
-
-  commands.insert_resource(EnemyAssets {
-    atlas_handle: texture_atlas_handle_enemy,
-    elite_atlas_handle: texture_atlas_handle_enemy2,
-  });
-
-  for n in -30..=30 {
-    let n = n as f32 * 50.0;
-    let shape1 = shapes::Line {
-      0: Vec2::new(n, 5000.0),
-      1: Vec2::new(n, -5000.0),
-    };
-
-    let shape2 = shapes::Line {
-      0: Vec2::new(-5000.0, n),
-      1: Vec2::new(5000.0, n),
-    };
-
-    commands.spawn((
-      OnGameScreen,
-      GeometryBuilder::build_as(
-        &shape1,
-        DrawMode::Outlined {
-          fill_mode: FillMode::color(Color::BLACK),
-          outline_mode: StrokeMode::new(Color::rgba(0.0, 0.0, 0.0, 0.2), 1.0),
-        },
-        Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-      ),
-    ));
-    commands.spawn((
-      OnGameScreen,
-      GeometryBuilder::build_as(
-        &shape2,
-        DrawMode::Outlined {
-          fill_mode: FillMode::color(Color::BLACK),
-          outline_mode: StrokeMode::new(Color::rgba(0.0, 0.0, 0.0, 0.1), 1.0),
-        },
-        Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-      ),
-    ));
-  }
-
-  let map_size = 600.0;
-
-  let map_size_50 = map_size * 50.0;
-  let map_size_25 = map_size * 25.0;
-
-  for (translate, size, cuboid) in [
-    ((0.0, -map_size - map_size_25, 0.0), (map_size_50, map_size_50), (map_size_25, map_size_25)),
-    ((0.0, map_size + map_size_25, 0.0), (map_size_50, map_size_50), (map_size_25, map_size_25)),
-    ((-map_size - map_size_25, 0.0, 0.0), (map_size_50, map_size * 2.0), (map_size_25, map_size_25)),
-    ((map_size + map_size_25, 0.0, 0.0), (map_size_50, map_size * 2.0), (map_size_25, map_size_25)),
-  ] {
-    let square = shapes::Rectangle {
-      extents: Vec2::new(size.0, size.1),
-      origin: RectangleOrigin::Center,
-    };
-    commands.spawn((
-      OnGameScreen,
-      Killzone,
-      GeometryBuilder::build_as(
-        &square,
-        DrawMode::Outlined {
-          fill_mode: FillMode::color(Color::rgba(1.0, 0.0, 0.0, 0.3)),
-          outline_mode: StrokeMode::new(Color::rgba(1.0, 0.0, 0.0, 0.0), 0.0),
-        },
-        Transform::from_translation(Vec3::new(translate.0, translate.1, translate.2)),
-      ),
-      Collider::cuboid(cuboid.0, cuboid.1),
-      RigidBody::Fixed,
-      CollisionGroups::new(Group::GROUP_6, Group::GROUP_1),
-    ));
-  }
-
-  commands.spawn((
-    OnGameScreen,
-    SpriteBundle {
-      texture: asset_server.load("cave.png"),
-      transform: Transform {
-        translation: Vec3::new(50., 20., 0.0),
-        ..default()
-      },
-      ..default()
-    },
-    EnemySpawner {
-      timer: Timer::from_seconds(0.5, TimerMode::Repeating),
-    },
-  ));
-
-  commands.spawn((
-    OnGameScreen,
-    SpriteBundle {
-      texture: asset_server.load("cave.png"),
-      transform: Transform {
-        translation: Vec3::new(-150., -60., 0.0),
-        ..default()
-      },
-      ..default()
-    },
-    EnemySpawner {
-      timer: Timer::from_seconds(0.7, TimerMode::Repeating),
-    },
-  ));
-
-  commands
-    .spawn((
-      OnGameScreen,
-      Player::One,
-      Gun {
-        cooldown: Timer::from_seconds(0.2, TimerMode::Repeating),
-      },
-      ActiveEvents::COLLISION_EVENTS,
-      CollisionGroups::new(Group::GROUP_1, Group::GROUP_3.union(Group::GROUP_6)),
-      SpriteSheetBundle {
-        texture_atlas: texture_atlas_handle.clone(),
-        transform: Transform::from_translation(Vec3::new(0.0, -100.0, 0.5)),
-        ..default()
-      },
-      AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
-      Velocity::default(),
-      RigidBody::Dynamic,
-    ))
-    .insert((Collider::ball(10.), Restitution::coefficient(0.7)))
-    .insert(InputManagerBundle::<Action> {
-      action_state: ActionState::default(),
-      input_map: InputMap::default()
-        .insert(VirtualDPad::arrow_keys(), Action::Move)
-        .insert(KeyCode::Space, Action::Attack)
-        .build(),
-    })
-    .with_children(|parent| {
-      parent.spawn((
-        OnGameScreen,
-        LightningGun {
-          cooldown: Timer::from_seconds(6.0, TimerMode::Once),
-        },
-        SpriteBundle {
-          texture: asset_server.load("lightning_icon.png"),
-          visibility: Visibility::INVISIBLE,
-          transform: Transform {
-            translation: Vec3::new(-16.0, 16.0, 0.0),
-            scale: Vec3::new(0.7, 0.7, 0.7),
-            ..default()
-          },
-          ..default()
-        },
-      ));
-    });
-
-  commands
-    .spawn((
-      OnGameScreen,
-      Player::Two,
-      Gun {
-        cooldown: Timer::from_seconds(0.2, TimerMode::Repeating),
-      },
-      ActiveEvents::COLLISION_EVENTS,
-      CollisionGroups::new(Group::GROUP_1, Group::GROUP_3.union(Group::GROUP_6)),
-      SpriteSheetBundle {
-        texture_atlas: texture_atlas_handle,
-        transform: Transform::from_translation(Vec3::new(0.0, 100.0, 0.5)),
-        ..default()
-      },
-      AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
-      RigidBody::Dynamic,
-      Velocity::default(),
-    ))
-    .insert((Collider::ball(10.), Restitution::coefficient(0.7)))
-    .insert(InputManagerBundle::<Action> {
-      action_state: ActionState::default(),
-      input_map: InputMap::default()
-        .insert(VirtualDPad::wasd(), Action::Move)
-        .insert(KeyCode::Q, Action::Attack)
-        .build(),
-    })
-    .with_children(|parent| {
-      parent.spawn((
-        OnGameScreen,
-        LinkGun {
-          cooldown: Timer::from_seconds(8.0, TimerMode::Once),
-        },
-        SpriteBundle {
-          texture: asset_server.load("laser_icon.png"),
-          visibility: Visibility::INVISIBLE,
-          transform: Transform {
-            translation: Vec3::new(-16.0, 16.0, 0.0),
-            scale: Vec3::new(0.7, 0.7, 0.7),
-            ..default()
-          },
-          ..default()
-        },
-      ));
-    });
 }
 
 pub struct DamageEvent {
@@ -588,160 +357,131 @@ pub fn follow_camera(
   }
 }
 
-pub fn elite_spawner(
+pub fn generic_spawner(
   mut commands: Commands,
-  mut elite_spawners: Query<&mut EnemyEliteSpawner>,
-  enemy_assets: Res<EnemyAssets>,
-  time: Res<Time>,
-  player_query: Query<&Transform, With<Player>>,
-) {
-  let mut rng = thread_rng();
-
-  let sum_position: Vec3 = player_query
-    .iter()
-    .map(|transform| transform.translation)
-    .sum::<Vec3>();
-  let average_position = sum_position * (1.0 / player_query.iter().count() as f32);
-
-  if elite_spawners.iter().count() == 0 && time.elapsed_seconds() > 5.0 {
-    commands.spawn(EnemyEliteSpawner {
-      timer: Timer::from_seconds(8.0, TimerMode::Repeating),
-    });
-  }
-
-  for mut spawner in elite_spawners.iter_mut() {
-    if spawner.timer.tick(time.delta()).just_finished() {
-      let random_angle: f32 = rng.gen_range(0.0..std::f32::consts::PI * 2.0);
-      let random_direction = Vec3::new(random_angle.cos(), random_angle.sin(), 0.0);
-
-      commands
-        .spawn((
-          OnGameScreen,
-          Homing,
-          Enemy {
-            direction: rng.gen_range(0.0..3.14),
-          },
-          Health::new(500.0),
-          CollisionGroups::new(Group::GROUP_3, Group::ALL),
-          SpriteSheetBundle {
-            texture_atlas: enemy_assets.elite_atlas_handle.clone(),
-            transform: Transform {
-              translation: average_position + random_direction * 2000.0,
-              scale: Vec3::new(1.75, 1.75, 1.75),
-              ..default()
-            },
-            ..default()
-          },
-          AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
-        ))
-        .insert((
-          RigidBody::Dynamic,
-          Velocity {
-            linvel: Vec2::new(20., 20.),
-            angvel: 0.0,
-          },
-          Damping {
-            linear_damping: 0.0,
-            angular_damping: 100000.0,
-          },
-          Collider::ball(10.),
-          Restitution::coefficient(0.7),
-        ));
-    }
-  }
-}
-
-pub fn spawner(
-  mut commands: Commands,
-  enemy_assets: Res<EnemyAssets>,
-  time: Res<Time>,
   mut spawners: Query<(&Transform, &mut EnemySpawner)>,
+  enemy_assets: Res<EnemyAssets>,
+  time: Res<Time>,
 ) {
-  let mut rng = thread_rng();
-  for (transform, mut spawner) in &mut spawners {
-    spawner.timer.tick(time.delta());
-    if spawner.timer.just_finished() {
-      commands
-        .spawn((
-          OnGameScreen,
-          Enemy {
-            direction: rng.gen_range(0.0..3.14),
-          },
-          Health::new(100.0),
-          CollisionGroups::new(Group::GROUP_3, Group::ALL),
-          SpriteSheetBundle {
-            texture_atlas: enemy_assets.atlas_handle.clone(),
-            transform: Transform {
-              translation: Vec3::new(transform.translation.x, transform.translation.y - 10., 1.),
-              ..default()
-            },
-            ..default()
-          },
-          AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
-        ))
-        .insert((
-          RigidBody::Dynamic,
-          Velocity {
-            linvel: Vec2::new(20., 20.),
-            angvel: 0.0,
-          },
-          Damping {
-            linear_damping: 0.0,
-            angular_damping: 100000.0,
-          },
-          Collider::ball(10.),
-          Restitution::coefficient(0.7),
-        ));
+  for (transform, mut spawner) in spawners.iter_mut() {
+    spawner.initial_delay.tick(time.delta());
+
+    if
+      spawner.timer.tick(time.delta()).just_finished() &&
+      spawner.initial_delay.finished() &&
+      spawner.spawn_count < spawner.spawn_limit
+    {
+      let mut transform = Transform::from_translation(transform.translation);
+      transform.translation.z += 0.1;
+
+      spawner.spawn_count += 1;
+      match spawner.enemy_type {
+        EnemySpawnerType::Elite => spawn_enemy(
+          &mut commands,
+          transform,
+          enemy_assets.elite_atlas_handle.clone(),
+          500.0,
+          EnemyMovement::Homing,
+        ),
+        EnemySpawnerType::Normal => {
+          let mut rng = thread_rng();
+          spawn_enemy(
+            &mut commands,
+            transform,
+            enemy_assets.atlas_handle.clone(),
+            100.0,
+            EnemyMovement::Random(rng.gen_range(0.0..std::f32::consts::PI * 2.0)),
+          );
+        }
+      };
     }
   }
 }
 
-pub fn enemy_homing_movement(
-  mut query: Query<(&mut Transform, &mut Velocity, &Homing, &Enemy), Without<Player>>,
+pub fn spawn_enemy(
+  commands: &mut Commands,
+  transform: Transform,
+  texture_atlas: Handle<TextureAtlas>,
+  health: f32,
+  movement: EnemyMovement,
+) {
+  commands
+    .spawn((
+      OnGameScreen,
+      movement,
+      Enemy,
+      Health::new(health),
+      CollisionGroups::new(Group::GROUP_3, Group::ALL),
+      SpriteSheetBundle {
+        texture_atlas,
+        transform,
+        ..default()
+      },
+      AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
+    ))
+    .insert((
+      RigidBody::Dynamic,
+      Velocity {
+        linvel: Vec2::new(20., 20.),
+        angvel: 0.0,
+      },
+      Damping {
+        linear_damping: 0.0,
+        angular_damping: 100000.0,
+      },
+      Collider::ball(10.),
+      Restitution::coefficient(0.7),
+    ));
+}
+
+pub fn enemy_movement(
+  mut query: Query<(&mut Transform, &mut Velocity, &mut EnemyMovement), Without<Player>>,
   players: Query<&Transform, With<Player>>,
 ) {
-  for (transform, mut velocity, _, _) in query.iter_mut() {
-    let mut closest_player: Option<Vec3> = None;
+  let mut rng = thread_rng();
+  for (transform, mut velocity, mut movement) in query.iter_mut() {
+    match *movement {
+      EnemyMovement::Homing => {
+        let mut closest_player: Option<Vec3> = None;
 
-    for player in players.iter() {
-      match closest_player {
-        Some(p) => {
-          if transform.translation.distance(player.translation) < transform.translation.distance(p)
-          {
-            closest_player = Some(player.translation);
+        for player in players.iter() {
+          match closest_player {
+            Some(p) => {
+              if transform.translation.distance(player.translation) < transform.translation.distance(p)
+              {
+                closest_player = Some(player.translation);
+              }
+            }
+            None => closest_player = Some(player.translation),
           }
         }
-        None => closest_player = Some(player.translation),
-      }
+
+        let speed = 50.0;
+
+        match closest_player {
+          Some(player) => {
+            let direction = (player - transform.translation).normalize_or_zero();
+            velocity.linvel = Vec2::new(direction.x * speed, direction.y * speed);
+          }
+          None => (),
+        }
+      },
+      EnemyMovement::Random(direction) => {
+        let lower = direction - 0.3;
+        let upper = direction + 0.3;
+
+        let new_direction = rng.gen_range(lower..upper);
+
+        *movement = EnemyMovement::Random(new_direction);
+
+        let x = rng.gen_range(0.0..75.0) * new_direction.cos();
+        let y = rng.gen_range(0.0..75.0) * new_direction.sin();
+
+        velocity.linvel.x = x;
+        velocity.linvel.y = y;
+      },
     }
 
-    let speed = 50.0;
-
-    match closest_player {
-      Some(player) => {
-        let direction = (player - transform.translation).normalize_or_zero();
-        velocity.linvel = Vec2::new(direction.x * speed, direction.y * speed);
-      }
-      None => (),
-    }
-  }
-}
-
-pub fn enemy_movement(mut query: Query<(&mut Enemy, &mut Velocity), Without<Homing>>) {
-  let mut rng = thread_rng();
-  for (mut enemy, mut velocity) in query.iter_mut() {
-    let lower = enemy.direction - 0.3;
-    let upper = enemy.direction + 0.3;
-
-    let new_direction = rng.gen_range(lower..upper);
-
-    enemy.direction = new_direction;
-
-    let x = rng.gen_range(0.0..75.0) * new_direction.cos();
-    let y = rng.gen_range(0.0..75.0) * new_direction.sin();
-
-    velocity.linvel.x = x;
-    velocity.linvel.y = y;
   }
 }
 

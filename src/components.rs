@@ -1,14 +1,33 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
+pub struct OnGameScreen;
+
+#[derive(Component)]
 pub enum Player {
   One,
   Two,
 }
 
+pub enum EnemySpawnerType {
+  Normal,
+  Elite,
+}
+
 #[derive(Component)]
 pub struct EnemySpawner {
   pub timer: Timer,
+  pub initial_delay: Timer,
+  pub spawn_count: usize,
+  pub spawn_limit: usize,
+  pub enemy_type: EnemySpawnerType,
+}
+
+
+#[derive(Component)]
+pub enum EnemyMovement {
+  Homing,
+  Random(f32),
 }
 
 #[derive(Component)]
@@ -29,9 +48,7 @@ pub struct EnemyAssets {
 }
 
 #[derive(Component, Debug)]
-pub struct Enemy {
-  pub direction: f32,
-}
+pub struct Enemy;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct AnimationTimer(pub Timer);

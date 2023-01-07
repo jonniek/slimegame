@@ -4,14 +4,17 @@ use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
 
 mod components;
-mod game;
+mod level_select;
 mod menu;
 mod systems;
+mod levels;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {
   Menu,
-  Game,
+  LevelSelect,
+  Level1,
+  Level2,
 }
 
 pub fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {
@@ -55,6 +58,8 @@ fn main() {
     .add_plugin(ShapePlugin)
     .add_plugin(InputManagerPlugin::<Action>::default())
     .add_plugin(menu::MenuPlugin)
-    .add_plugin(game::GamePlugin)
+    .add_plugin(level_select::LevelSelect)
+    .add_plugin(levels::level1::Level1Plugin)
+    .add_plugin(levels::level2::Level2Plugin)
     .run();
 }

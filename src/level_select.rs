@@ -1,20 +1,20 @@
 use bevy::prelude::*;
 
-use super::{despawn_screen, GameData, GameState};
+use super::{despawn_screen, GameState};
 
-pub struct MenuPlugin;
+pub struct LevelSelect;
 
-impl Plugin for MenuPlugin {
+impl Plugin for LevelSelect {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set(SystemSet::on_enter(GameState::Menu).with_system(manu_setup))
+      .add_system_set(SystemSet::on_enter(GameState::LevelSelect).with_system(manu_setup))
       .add_system_set(
-        SystemSet::on_update(GameState::Menu)
+        SystemSet::on_update(GameState::LevelSelect)
           .with_system(menu_action)
           .with_system(button_system),
       )
       .add_system_set(
-        SystemSet::on_exit(GameState::Menu).with_system(despawn_screen::<OnMenuScreen>),
+        SystemSet::on_exit(GameState::LevelSelect).with_system(despawn_screen::<OnMenuScreen>),
       );
   }
 }
@@ -29,7 +29,8 @@ const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 #[derive(Component)]
 enum MenuButtonAction {
-  Play,
+  Level1,
+  Level2,
 }
 
 fn menu_action(
@@ -39,9 +40,12 @@ fn menu_action(
   for (interaction, menu_button_action) in &interaction_query {
     if *interaction == Interaction::Clicked {
       match menu_button_action {
-        MenuButtonAction::Play => {
-          game_state.set(GameState::LevelSelect).unwrap();
-        }
+        MenuButtonAction::Level1 => {
+          game_state.set(GameState::Level1).unwrap();
+        },
+        MenuButtonAction::Level2 => {
+          game_state.set(GameState::Level2).unwrap();
+        },
       }
     }
   }
@@ -61,9 +65,8 @@ fn button_system(
   }
 }
 
-fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>, state: Res<GameData>) {
+fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
   let font = asset_server.load("font.ttf");
-  let icon = asset_server.load("player.png");
   let button_text_style = TextStyle {
     font: font.clone(),
     font_size: 40.0,
@@ -92,32 +95,18 @@ fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>, state: Res
       OnMenuScreen,
     ))
     .with_children(|parent| {
-      if state.score > 0 {
-        parent.spawn(
-          TextBundle::from_section(
-            format!("Game over!\nScore: {:?}", state.score),
-            TextStyle {
-              font: font.clone(),
-              font_size: 40.0,
-              color: TEXT_COLOR,
-            },
-          )
-          .with_text_alignment(TextAlignment::CENTER)
-          .with_style(Style {
-            margin: UiRect::all(Val::Px(50.0)),
+      parent
+        .spawn((
+          ButtonBundle {
+            style: button_style.clone(),
+            background_color: NORMAL_BUTTON.into(),
             ..default()
-          }),
-        );
-      }
-
-      parent.spawn(ImageBundle {
-        style: Style {
-          size: Size::new(Val::Auto, Val::Px(200.0)),
-          ..default()
-        },
-        image: UiImage::from(icon),
-        ..default()
-      });
+          },
+          MenuButtonAction::Level1,
+        ))
+        .with_children(|parent| {
+          parent.spawn(TextBundle::from_section("Level 1", button_text_style.clone()));
+        });
 
       parent
         .spawn((
@@ -126,10 +115,10 @@ fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>, state: Res
             background_color: NORMAL_BUTTON.into(),
             ..default()
           },
-          MenuButtonAction::Play,
+          MenuButtonAction::Level2,
         ))
         .with_children(|parent| {
-          parent.spawn(TextBundle::from_section("Play", button_text_style.clone()));
+          parent.spawn(TextBundle::from_section("Level 2", button_text_style.clone()));
         });
     });
 }

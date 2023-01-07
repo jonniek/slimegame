@@ -1,4 +1,5 @@
 use crate::components::*;
+use crate::player::Player;
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::FillMode;
 use bevy_prototype_lyon::prelude::*;
@@ -366,10 +367,9 @@ pub fn generic_spawner(
   for (transform, mut spawner) in spawners.iter_mut() {
     spawner.initial_delay.tick(time.delta());
 
-    if
-      spawner.timer.tick(time.delta()).just_finished() &&
-      spawner.initial_delay.finished() &&
-      spawner.spawn_count < spawner.spawn_limit
+    if spawner.timer.tick(time.delta()).just_finished()
+      && spawner.initial_delay.finished()
+      && spawner.spawn_count < spawner.spawn_limit
     {
       let mut transform = Transform::from_translation(transform.translation);
       transform.translation.z += 0.1;
@@ -447,7 +447,8 @@ pub fn enemy_movement(
         for player in players.iter() {
           match closest_player {
             Some(p) => {
-              if transform.translation.distance(player.translation) < transform.translation.distance(p)
+              if transform.translation.distance(player.translation)
+                < transform.translation.distance(p)
               {
                 closest_player = Some(player.translation);
               }
@@ -465,7 +466,7 @@ pub fn enemy_movement(
           }
           None => (),
         }
-      },
+      }
       EnemyMovement::Random(direction) => {
         let lower = direction - 0.3;
         let upper = direction + 0.3;
@@ -479,24 +480,7 @@ pub fn enemy_movement(
 
         velocity.linvel.x = x;
         velocity.linvel.y = y;
-      },
-    }
-
-  }
-}
-
-pub fn sprite_movement(
-  mut player_query: Query<(&mut Velocity, &ActionState<Action>), With<Player>>,
-) {
-  for (mut velocity, action_state) in player_query.iter_mut() {
-    if action_state.pressed(Action::Move) {
-      let mx_vec = action_state.clamped_axis_pair(Action::Move).unwrap().xy();
-      let distance = 100.0;
-      velocity.linvel.x = mx_vec.x * distance;
-      velocity.linvel.y = mx_vec.y * distance;
-    } else {
-      velocity.linvel.x = 0.0;
-      velocity.linvel.y = 0.0;
+      }
     }
   }
 }

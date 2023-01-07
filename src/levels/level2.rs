@@ -1,13 +1,13 @@
 use crate::components::*;
+use crate::player::*;
 use crate::systems;
-use crate::{Action, GameData, GameState, despawn_screen};
+use crate::{despawn_screen, Action, GameData, GameState};
 
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::FillMode;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
-
 
 pub struct Level2Plugin;
 
@@ -20,8 +20,8 @@ impl Plugin for Level2Plugin {
         SystemSet::on_update(GameState::Level2)
           .with_system(systems::clean_up_expired)
           .with_system(systems::animate_sprite)
-          .with_system(systems::sprite_movement)
-          .with_system(systems::follow_camera.after(systems::sprite_movement))
+          .with_system(player_movement)
+          .with_system(systems::follow_camera.after(player_movement))
           .with_system(systems::enemy_movement)
           .with_system(systems::spawn_projectiles)
           .with_system(systems::spawn_lightning)
@@ -125,10 +125,26 @@ pub fn init(
   let map_size_25 = map_size * 25.0;
 
   for (translate, size, cuboid) in [
-    ((0.0, -map_size - map_size_25, 0.0), (map_size_50, map_size_50), (map_size_25, map_size_25)),
-    ((0.0, map_size + map_size_25, 0.0), (map_size_50, map_size_50), (map_size_25, map_size_25)),
-    ((-map_size - map_size_25, 0.0, 0.0), (map_size_50, map_size * 2.0), (map_size_25, map_size_25)),
-    ((map_size + map_size_25, 0.0, 0.0), (map_size_50, map_size * 2.0), (map_size_25, map_size_25)),
+    (
+      (0.0, -map_size - map_size_25, 0.0),
+      (map_size_50, map_size_50),
+      (map_size_25, map_size_25),
+    ),
+    (
+      (0.0, map_size + map_size_25, 0.0),
+      (map_size_50, map_size_50),
+      (map_size_25, map_size_25),
+    ),
+    (
+      (-map_size - map_size_25, 0.0, 0.0),
+      (map_size_50, map_size * 2.0),
+      (map_size_25, map_size_25),
+    ),
+    (
+      (map_size + map_size_25, 0.0, 0.0),
+      (map_size_50, map_size * 2.0),
+      (map_size_25, map_size_25),
+    ),
   ] {
     let square = shapes::Rectangle {
       extents: Vec2::new(size.0, size.1),
@@ -170,7 +186,6 @@ pub fn init(
     },
   ));
 
-
   commands.spawn((
     OnGameScreen,
     SpriteBundle {
@@ -189,7 +204,6 @@ pub fn init(
       enemy_type: EnemySpawnerType::Elite,
     },
   ));
-
 
   commands.spawn((
     OnGameScreen,
@@ -229,7 +243,6 @@ pub fn init(
     },
   ));
 
-
   commands.spawn((
     OnGameScreen,
     SpriteBundle {
@@ -249,95 +262,33 @@ pub fn init(
     },
   ));
 
-  commands
-    .spawn((
-      OnGameScreen,
-      Player::One,
-      Gun {
-        cooldown: Timer::from_seconds(0.2, TimerMode::Repeating),
-      },
-      ActiveEvents::COLLISION_EVENTS,
-      CollisionGroups::new(Group::GROUP_1, Group::GROUP_3.union(Group::GROUP_6)),
-      SpriteSheetBundle {
-        texture_atlas: texture_atlas_handle.clone(),
-        transform: Transform::from_translation(Vec3::new(0.0, -100.0, 0.5)),
-        ..default()
-      },
-      AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
-      Velocity::default(),
-      RigidBody::Dynamic,
-    ))
-    .insert((Collider::ball(10.), Restitution::coefficient(0.7)))
-    .insert(InputManagerBundle::<Action> {
+  create_player(
+    &mut commands,
+    Player::One,
+    texture_atlas_handle.clone(),
+    InputManagerBundle::<Action> {
       action_state: ActionState::default(),
       input_map: InputMap::default()
         .insert(VirtualDPad::arrow_keys(), Action::Move)
         .insert(KeyCode::Space, Action::Attack)
         .build(),
-    })
-    .with_children(|parent| {
-      parent.spawn((
-        OnGameScreen,
-        LightningGun {
-          cooldown: Timer::from_seconds(6.0, TimerMode::Once),
-        },
-        SpriteBundle {
-          texture: asset_server.load("lightning_icon.png"),
-          visibility: Visibility::INVISIBLE,
-          transform: Transform {
-            translation: Vec3::new(-16.0, 16.0, 0.0),
-            scale: Vec3::new(0.7, 0.7, 0.7),
-            ..default()
-          },
-          ..default()
-        },
-      ));
-    });
+    },
+    &asset_server,
+  );
 
-  commands
-    .spawn((
-      OnGameScreen,
-      Player::Two,
-      Gun {
-        cooldown: Timer::from_seconds(0.2, TimerMode::Repeating),
-      },
-      ActiveEvents::COLLISION_EVENTS,
-      CollisionGroups::new(Group::GROUP_1, Group::GROUP_3.union(Group::GROUP_6)),
-      SpriteSheetBundle {
-        texture_atlas: texture_atlas_handle,
-        transform: Transform::from_translation(Vec3::new(0.0, 100.0, 0.5)),
-        ..default()
-      },
-      AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
-      RigidBody::Dynamic,
-      Velocity::default(),
-    ))
-    .insert((Collider::ball(10.), Restitution::coefficient(0.7)))
-    .insert(InputManagerBundle::<Action> {
+  create_player(
+    &mut commands,
+    Player::Two,
+    texture_atlas_handle.clone(),
+    InputManagerBundle::<Action> {
       action_state: ActionState::default(),
       input_map: InputMap::default()
         .insert(VirtualDPad::wasd(), Action::Move)
         .insert(KeyCode::Q, Action::Attack)
         .build(),
-    })
-    .with_children(|parent| {
-      parent.spawn((
-        OnGameScreen,
-        LinkGun {
-          cooldown: Timer::from_seconds(8.0, TimerMode::Once),
-        },
-        SpriteBundle {
-          texture: asset_server.load("laser_icon.png"),
-          visibility: Visibility::INVISIBLE,
-          transform: Transform {
-            translation: Vec3::new(-16.0, 16.0, 0.0),
-            scale: Vec3::new(0.7, 0.7, 0.7),
-            ..default()
-          },
-          ..default()
-        },
-      ));
-    });
+    },
+    &asset_server,
+  );
 }
 
 fn end_condition(
@@ -347,7 +298,11 @@ fn end_condition(
   mut game_state: ResMut<State<GameState>>,
 ) {
   // game won
-  if enemies.is_empty() && spawners.iter().all(|spawner| spawner.spawn_count >= spawner.spawn_limit) {
+  if enemies.is_empty()
+    && spawners
+      .iter()
+      .all(|spawner| spawner.spawn_count >= spawner.spawn_limit)
+  {
     game_state.set(GameState::LevelSelect).unwrap()
   }
 

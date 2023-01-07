@@ -5,9 +5,10 @@ use leafwing_input_manager::prelude::*;
 
 mod components;
 mod level_select;
-mod menu;
-mod systems;
 mod levels;
+mod menu;
+mod player;
+mod systems;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {

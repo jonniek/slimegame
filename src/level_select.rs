@@ -42,10 +42,10 @@ fn menu_action(
       match menu_button_action {
         MenuButtonAction::Level1 => {
           game_state.set(GameState::Level1).unwrap();
-        },
+        }
         MenuButtonAction::Level2 => {
           game_state.set(GameState::Level2).unwrap();
-        },
+        }
       }
     }
   }
@@ -105,7 +105,10 @@ fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
           MenuButtonAction::Level1,
         ))
         .with_children(|parent| {
-          parent.spawn(TextBundle::from_section("Level 1", button_text_style.clone()));
+          parent.spawn(TextBundle::from_section(
+            "Level 1",
+            button_text_style.clone(),
+          ));
         });
 
       parent
@@ -118,7 +121,10 @@ fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
           MenuButtonAction::Level2,
         ))
         .with_children(|parent| {
-          parent.spawn(TextBundle::from_section("Level 2", button_text_style.clone()));
+          parent.spawn(TextBundle::from_section(
+            "Level 2",
+            button_text_style.clone(),
+          ));
         });
     });
 }

@@ -3,12 +3,6 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct OnGameScreen;
 
-#[derive(Component)]
-pub enum Player {
-  One,
-  Two,
-}
-
 pub enum EnemySpawnerType {
   Normal,
   Elite,
@@ -22,7 +16,6 @@ pub struct EnemySpawner {
   pub spawn_limit: usize,
   pub enemy_type: EnemySpawnerType,
 }
-
 
 #[derive(Component)]
 pub enum EnemyMovement {

@@ -1,20 +1,20 @@
 use bevy::prelude::*;
 
-use super::{despawn_screen, GameState, GameData};
+use crate::{despawn_screen, GameState, GameData};
 
-pub struct LevelSelect;
+pub struct UpgradesPlugin;
 
-impl Plugin for LevelSelect {
+impl Plugin for UpgradesPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set(SystemSet::on_enter(GameState::LevelSelect).with_system(manu_setup))
+      .add_system_set(SystemSet::on_enter(GameState::Upgrades).with_system(setup))
       .add_system_set(
-        SystemSet::on_update(GameState::LevelSelect)
+        SystemSet::on_update(GameState::Upgrades)
           .with_system(menu_action)
           .with_system(button_system),
       )
       .add_system_set(
-        SystemSet::on_exit(GameState::LevelSelect).with_system(despawn_screen::<OnMenuScreen>),
+        SystemSet::on_exit(GameState::Upgrades).with_system(despawn_screen::<OnMenuScreen>),
       );
   }
 }
@@ -29,10 +29,9 @@ const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 #[derive(Component)]
 enum MenuButtonAction {
-  Level1,
-  Level2,
   IncreaseDamage,
   IncreaseFireRate,
+  LevelSelect,
 }
 
 #[derive(Component)]
@@ -48,12 +47,6 @@ fn menu_action(
   for (interaction, menu_button_action) in &interaction_query {
     if *interaction == Interaction::Clicked {
       match menu_button_action {
-        MenuButtonAction::Level1 => {
-          game_state.set(GameState::Level1).unwrap();
-        },
-        MenuButtonAction::Level2 => {
-          game_state.set(GameState::Level2).unwrap();
-        },
         MenuButtonAction::IncreaseDamage => {
           if data.money >= 50 {
             data.gun_damage += 20.0;
@@ -71,7 +64,10 @@ fn menu_action(
               display.sections[0].value = format!("${:?}", data.money);
             }
           }
-        }
+        },
+        MenuButtonAction::LevelSelect => {
+          game_state.set(GameState::LevelSelect).unwrap();
+        },
       }
     }
   }
@@ -91,7 +87,7 @@ fn button_system(
   }
 }
 
-fn manu_setup(
+fn setup(
   mut commands: Commands,
   asset_server: Res<AssetServer>,
   state: Res<GameData>,
@@ -124,6 +120,22 @@ fn manu_setup(
       },
       OnMenuScreen,
     )).with_children(|parent| {
+      parent
+        .spawn((
+          ButtonBundle {
+            style: button_style.clone(),
+            background_color: NORMAL_BUTTON.into(),
+            ..default()
+          },
+          MenuButtonAction::LevelSelect,
+        ))
+        .with_children(|parent| {
+          parent.spawn(TextBundle::from_section(
+            "Level selection",
+            button_text_style.clone(),
+          ));
+        });
+
       parent.spawn((
         CurrentMoney,
         TextBundle::from_section(
@@ -188,51 +200,5 @@ fn manu_setup(
           });
       });
 
-      parent.spawn((
-        NodeBundle {
-          style: Style {
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            flex_direction: FlexDirection::Row,
-            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-            ..default()
-          },
-          ..default()
-        },
-        OnMenuScreen,
-      ))
-      .with_children(|parent| {
-        parent
-          .spawn((
-            ButtonBundle {
-              style: button_style.clone(),
-              background_color: NORMAL_BUTTON.into(),
-              ..default()
-            },
-            MenuButtonAction::Level1,
-          ))
-          .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-              "Level 1",
-              button_text_style.clone(),
-            ));
-          });
-  
-        parent
-          .spawn((
-            ButtonBundle {
-              style: button_style.clone(),
-              background_color: NORMAL_BUTTON.into(),
-              ..default()
-            },
-            MenuButtonAction::Level2,
-          ))
-          .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-              "Level 2",
-              button_text_style.clone(),
-            ));
-          });
-      });
     });
 }

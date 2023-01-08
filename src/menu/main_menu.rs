@@ -1,20 +1,20 @@
 use bevy::prelude::*;
 
-use super::{despawn_screen, GameState};
+use crate::{despawn_screen, GameState};
 
-pub struct MenuPlugin;
+pub struct MainMenuPlugin;
 
-impl Plugin for MenuPlugin {
+impl Plugin for MainMenuPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set(SystemSet::on_enter(GameState::Menu).with_system(manu_setup))
+      .add_system_set(SystemSet::on_enter(GameState::MainMenu).with_system(setup))
       .add_system_set(
-        SystemSet::on_update(GameState::Menu)
+        SystemSet::on_update(GameState::MainMenu)
           .with_system(menu_action)
           .with_system(button_system),
       )
       .add_system_set(
-        SystemSet::on_exit(GameState::Menu).with_system(despawn_screen::<OnMenuScreen>),
+        SystemSet::on_exit(GameState::MainMenu).with_system(despawn_screen::<OnMenuScreen>),
       );
   }
 }
@@ -61,7 +61,7 @@ fn button_system(
   }
 }
 
-fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
   let font = asset_server.load("font.ttf");
   let icon = asset_server.load("player.png");
   let button_text_style = TextStyle {

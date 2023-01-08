@@ -6,17 +6,17 @@ use leafwing_input_manager::prelude::*;
 mod camera;
 mod components;
 mod enemy;
-mod level_select;
-mod levels;
 mod menu;
+mod levels;
 mod player;
 mod systems;
 mod weapons;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {
-  Menu,
+  MainMenu,
   LevelSelect,
+  Upgrades,
   Level1,
   Level2,
 }
@@ -76,11 +76,12 @@ fn main() {
     .init_resource::<GameData>()
     .add_startup_system(camera::setup_camera)
     .add_system(bevy::window::close_on_esc)
-    .add_state(GameState::Menu)
+    .add_state(GameState::MainMenu)
     .add_plugin(ShapePlugin)
     .add_plugin(InputManagerPlugin::<Action>::default())
-    .add_plugin(menu::MenuPlugin)
-    .add_plugin(level_select::LevelSelect)
+    .add_plugin(menu::main_menu::MainMenuPlugin)
+    .add_plugin(menu::level_select::LevelSelectPlugin)
+    .add_plugin(menu::upgrades::UpgradesPlugin)
     .add_plugin(levels::level1::Level1Plugin)
     .add_plugin(levels::level2::Level2Plugin)
     .run();

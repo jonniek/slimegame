@@ -33,6 +33,10 @@ pub fn create_player(
       CollisionGroups::new(Group::GROUP_1, Group::GROUP_3.union(Group::GROUP_6)),
       SpriteSheetBundle {
         texture_atlas,
+        transform: match player {
+          Player::One => Transform::from_translation(Vec3::new(0.0, -20.0, 0.0)),
+          Player::Two => Transform::from_translation(Vec3::new(0.0, 20.0, 0.0)),
+        },
         ..default()
       },
       AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),

@@ -13,6 +13,7 @@ mod menu;
 mod player;
 mod systems;
 mod weapons;
+mod map;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {
@@ -21,6 +22,13 @@ pub enum GameState {
   Upgrades,
   Level1,
   Level2,
+}
+
+#[derive(Resource, Default)]
+pub struct TextureAtlasHandles {
+  pub atlas_handle: Handle<TextureAtlas>,
+  pub elite_atlas_handle: Handle<TextureAtlas>,
+  pub player_atlas_handle: Handle<TextureAtlas>,
 }
 
 pub fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {
@@ -93,6 +101,7 @@ fn main() {
     // .add_plugin(RapierDebugRenderPlugin::default())
     .init_resource::<GameData>()
     .add_startup_system(camera::setup_camera)
+    .add_startup_system(systems::initialize_texture_atlas)
     .add_system(bevy::window::close_on_esc)
     .add_state(GameState::MainMenu)
     .add_plugin(ShapePlugin)

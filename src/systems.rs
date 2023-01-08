@@ -6,7 +6,46 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::CollisionEvent::Started;
 use bevy_rapier2d::prelude::*;
 
-use crate::{DamageEvent, GameData};
+use crate::{DamageEvent, GameData, TextureAtlasHandles};
+
+pub fn initialize_texture_atlas(
+  mut commands: Commands,
+  asset_server: Res<AssetServer>,
+  mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
+  let texture_handle = asset_server.load("player_96x32.png");
+  let texture_atlas =
+    TextureAtlas::from_grid(texture_handle, Vec2::new(32.0, 32.0), 3, 1, None, None);
+  let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+  let texture_handle_enemy = asset_server.load("enemy_96x32.png");
+  let texture_atlas_enemy = TextureAtlas::from_grid(
+    texture_handle_enemy,
+    Vec2::new(32.0, 32.0),
+    3,
+    1,
+    None,
+    None,
+  );
+  let texture_atlas_handle_enemy = texture_atlases.add(texture_atlas_enemy);
+
+  let texture_handle_enemy2 = asset_server.load("enemy_2_96x32.png");
+  let texture_atlas_enemy2 = TextureAtlas::from_grid(
+    texture_handle_enemy2,
+    Vec2::new(32.0, 32.0),
+    3,
+    1,
+    None,
+    None,
+  );
+  let texture_atlas_handle_enemy2 = texture_atlases.add(texture_atlas_enemy2);
+
+  commands.insert_resource(TextureAtlasHandles {
+    atlas_handle: texture_atlas_handle_enemy,
+    elite_atlas_handle: texture_atlas_handle_enemy2.clone(),
+    player_atlas_handle: texture_atlas_handle,
+  });
+}
 
 pub fn handle_damage_event(
   mut commands: Commands,

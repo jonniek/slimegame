@@ -4,6 +4,7 @@ use crate::GameData;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
+use crate::TextureAtlasHandles;
 
 pub enum EnemySpawnerType {
   Normal,
@@ -30,19 +31,13 @@ pub struct EnemyEliteSpawner {
   pub timer: Timer,
 }
 
-#[derive(Resource, Default)]
-pub struct EnemyAssets {
-  pub atlas_handle: Handle<TextureAtlas>,
-  pub elite_atlas_handle: Handle<TextureAtlas>,
-}
-
 #[derive(Component, Debug)]
 pub struct Enemy;
 
 pub fn generic_spawner(
   mut commands: Commands,
   mut spawners: Query<(&Transform, &mut EnemySpawner)>,
-  enemy_assets: Res<EnemyAssets>,
+  textures: Res<TextureAtlasHandles>,
   time: Res<Time>,
 ) {
   for (transform, mut spawner) in spawners.iter_mut() {
@@ -60,7 +55,7 @@ pub fn generic_spawner(
         EnemySpawnerType::Elite => spawn_enemy(
           &mut commands,
           transform,
-          enemy_assets.elite_atlas_handle.clone(),
+          textures.elite_atlas_handle.clone(),
           500.0,
           EnemyMovement::Homing,
         ),
@@ -69,7 +64,7 @@ pub fn generic_spawner(
           spawn_enemy(
             &mut commands,
             transform,
-            enemy_assets.atlas_handle.clone(),
+            textures.atlas_handle.clone(),
             100.0,
             EnemyMovement::Random(rng.gen_range(0.0..std::f32::consts::PI * 2.0)),
           );

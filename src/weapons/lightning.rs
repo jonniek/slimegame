@@ -9,6 +9,8 @@ use leafwing_input_manager::prelude::*;
 #[derive(Component, Debug)]
 pub struct LightningGun {
   pub cooldown: Timer,
+  pub damage: f32,
+  pub size: f32,
 }
 
 pub fn spawn_lightning(
@@ -31,7 +33,7 @@ pub fn spawn_lightning(
       if action_state.just_pressed(Action::Attack) {
         if lightning_gun.cooldown.finished() {
           *visibility = Visibility::INVISIBLE;
-          let scale = 2.5;
+          let scale = lightning_gun.size;
 
           commands.spawn((
             OnGameScreen,
@@ -50,7 +52,7 @@ pub fn spawn_lightning(
             if distance < 75.0 * scale / 2.0 {
               damage_event.send(DamageEvent {
                 entity: enemy_entity,
-                damage: 100.0,
+                damage: lightning_gun.damage,
               });
             }
           }

@@ -48,6 +48,8 @@ pub fn create_player(
             OnGameScreen,
             LightningGun {
               cooldown: Timer::from_seconds(6.0, TimerMode::Once),
+              damage: 100.0,
+              size: 2.5,
             },
             SpriteBundle {
               texture: asset_server.load("lightning_icon.png"),
@@ -66,6 +68,7 @@ pub fn create_player(
             OnGameScreen,
             LaserGun {
               cooldown: Timer::from_seconds(8.0, TimerMode::Once),
+              damage: 500.0,
             },
             SpriteBundle {
               texture: asset_server.load("laser_icon.png"),

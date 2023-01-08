@@ -12,6 +12,7 @@ pub struct Projectile {
 #[derive(Component, Debug)]
 pub struct Gun {
   pub cooldown: Timer,
+  pub damage: f32,
 }
 
 pub fn spawn_projectiles(
@@ -40,8 +41,8 @@ pub fn spawn_projectiles(
           ..default()
         },
         CollisionGroups::new(Group::GROUP_2, Group::GROUP_3),
-        Projectile { damage: 50.0 },
-        ExpirationTimer(Timer::from_seconds(10.0, TimerMode::Once)),
+        Projectile { damage: gun.damage },
+        ExpirationTimer(Timer::from_seconds(5.0, TimerMode::Once)),
         ActiveEvents::COLLISION_EVENTS,
         RigidBody::Dynamic,
         Velocity {

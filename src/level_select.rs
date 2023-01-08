@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::{despawn_screen, GameState};
+use super::{despawn_screen, GameState, GameData};
 
 pub struct LevelSelect;
 
@@ -31,20 +31,46 @@ const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 enum MenuButtonAction {
   Level1,
   Level2,
+  IncreaseDamage,
+  IncreaseFireRate,
 }
+
+#[derive(Component)]
+struct CurrentMoney;
+
 
 fn menu_action(
   interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>)>,
   mut game_state: ResMut<State<GameState>>,
+  mut data: ResMut<GameData>,
+  mut money_display: Query<&mut Text, With<CurrentMoney>>,
 ) {
   for (interaction, menu_button_action) in &interaction_query {
     if *interaction == Interaction::Clicked {
       match menu_button_action {
         MenuButtonAction::Level1 => {
           game_state.set(GameState::Level1).unwrap();
-        }
+        },
         MenuButtonAction::Level2 => {
           game_state.set(GameState::Level2).unwrap();
+        },
+        MenuButtonAction::IncreaseDamage => {
+          if data.money >= 50 {
+            data.gun_damage += 20.0;
+            data.money -= 50;
+            for mut display in money_display.iter_mut() {
+              display.sections[0].value = format!("${:?}", data.money);
+            }
+          }
+        },
+        MenuButtonAction::IncreaseFireRate => {
+          if data.money >= 50 {
+            data.gun_cooldown = data.gun_cooldown * 0.9;
+            data.money -= 50;
+            for mut display in money_display.iter_mut() {
+              display.sections[0].value = format!("${:?}", data.money);
+            }
+          }
         }
       }
     }
@@ -65,7 +91,11 @@ fn button_system(
   }
 }
 
-fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn manu_setup(
+  mut commands: Commands,
+  asset_server: Res<AssetServer>,
+  state: Res<GameData>,
+) {
   let font = asset_server.load("font.ttf");
   let button_text_style = TextStyle {
     font: font.clone(),
@@ -93,38 +123,116 @@ fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
       },
       OnMenuScreen,
-    ))
-    .with_children(|parent| {
-      parent
-        .spawn((
-          ButtonBundle {
-            style: button_style.clone(),
-            background_color: NORMAL_BUTTON.into(),
-            ..default()
+    )).with_children(|parent| {
+      parent.spawn((
+        CurrentMoney,
+        TextBundle::from_section(
+          format!("${:?}", state.money),
+          TextStyle {
+            font: font.clone(),
+            font_size: 40.0,
+            color: TEXT_COLOR,
           },
-          MenuButtonAction::Level1,
-        ))
-        .with_children(|parent| {
-          parent.spawn(TextBundle::from_section(
-            "Level 1",
-            button_text_style.clone(),
-          ));
-        });
+        )
+        .with_text_alignment(TextAlignment::CENTER)
+        .with_style(Style {
+          margin: UiRect::all(Val::Px(50.0)),
+          ..default()
+        })
+      ));
 
-      parent
-        .spawn((
-          ButtonBundle {
-            style: button_style.clone(),
-            background_color: NORMAL_BUTTON.into(),
+      parent.spawn((
+        NodeBundle {
+          style: Style {
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            flex_direction: FlexDirection::Row,
+            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
             ..default()
           },
-          MenuButtonAction::Level2,
-        ))
-        .with_children(|parent| {
-          parent.spawn(TextBundle::from_section(
-            "Level 2",
-            button_text_style.clone(),
-          ));
-        });
+          ..default()
+        },
+        OnMenuScreen,
+      ))
+      .with_children(|parent| {
+        parent
+          .spawn((
+            ButtonBundle {
+              style: button_style.clone(),
+              background_color: NORMAL_BUTTON.into(),
+              ..default()
+            },
+            MenuButtonAction::IncreaseFireRate,
+          ))
+          .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+              "Fire rate $50",
+              button_text_style.clone(),
+            ));
+          });
+  
+        parent
+          .spawn((
+            ButtonBundle {
+              style: button_style.clone(),
+              background_color: NORMAL_BUTTON.into(),
+              ..default()
+            },
+            MenuButtonAction::IncreaseDamage,
+          ))
+          .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+              "Damage $50",
+              button_text_style.clone(),
+            ));
+          });
+      });
+
+      parent.spawn((
+        NodeBundle {
+          style: Style {
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            flex_direction: FlexDirection::Row,
+            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+            ..default()
+          },
+          ..default()
+        },
+        OnMenuScreen,
+      ))
+      .with_children(|parent| {
+        parent
+          .spawn((
+            ButtonBundle {
+              style: button_style.clone(),
+              background_color: NORMAL_BUTTON.into(),
+              ..default()
+            },
+            MenuButtonAction::Level1,
+          ))
+          .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+              "Level 1",
+              button_text_style.clone(),
+            ));
+          });
+  
+        parent
+          .spawn((
+            ButtonBundle {
+              style: button_style.clone(),
+              background_color: NORMAL_BUTTON.into(),
+              ..default()
+            },
+            MenuButtonAction::Level2,
+          ))
+          .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+              "Level 2",
+              button_text_style.clone(),
+            ));
+          });
+      });
     });
 }

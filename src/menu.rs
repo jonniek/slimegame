@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::{despawn_screen, GameData, GameState};
+use super::{despawn_screen, GameState};
 
 pub struct MenuPlugin;
 
@@ -61,7 +61,7 @@ fn button_system(
   }
 }
 
-fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>, state: Res<GameData>) {
+fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
   let font = asset_server.load("font.ttf");
   let icon = asset_server.load("player.png");
   let button_text_style = TextStyle {
@@ -92,24 +92,6 @@ fn manu_setup(mut commands: Commands, asset_server: Res<AssetServer>, state: Res
       OnMenuScreen,
     ))
     .with_children(|parent| {
-      if state.score > 0 {
-        parent.spawn(
-          TextBundle::from_section(
-            format!("Game over!\nScore: {:?}", state.score),
-            TextStyle {
-              font: font.clone(),
-              font_size: 40.0,
-              color: TEXT_COLOR,
-            },
-          )
-          .with_text_alignment(TextAlignment::CENTER)
-          .with_style(Style {
-            margin: UiRect::all(Val::Px(50.0)),
-            ..default()
-          }),
-        );
-      }
-
       parent.spawn(ImageBundle {
         style: Style {
           size: Size::new(Val::Auto, Val::Px(200.0)),

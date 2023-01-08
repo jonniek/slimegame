@@ -21,7 +21,7 @@ pub fn handle_damage_event(
 
       if health.current_health <= 0.0 {
         commands.entity(damage_event.entity).despawn();
-        state.score += 1;
+        state.money += 1;
       } else {
         sprite.color.set_r(200.0);
         sprite.color.set_g(200.0);

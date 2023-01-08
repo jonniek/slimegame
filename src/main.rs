@@ -27,10 +27,23 @@ pub fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut comm
   }
 }
 
-#[derive(Resource, Default, Debug)]
+#[derive(Resource, Debug)]
 pub struct GameData {
-  score: usize,
+  money: i32,
   camera_pos: Vec2,
+  gun_cooldown: f32,
+  gun_damage: f32,
+}
+
+impl Default for GameData {
+  fn default() -> Self {
+      GameData {
+        money: 100,
+        camera_pos: Vec2::default(),
+        gun_cooldown: 1.5,
+        gun_damage: 20.0,
+      }
+  }
 }
 
 #[derive(Actionlike, PartialEq, Eq, Clone, Copy, Hash, Debug)]

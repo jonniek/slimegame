@@ -174,7 +174,7 @@ pub fn kill_enemy(
   for (entity, health) in enemies.iter() {
     if health.current_health <= 0.0 {
       commands.entity(entity).despawn();
-      state.score += 1;
+      state.money += 1;
     }
   }
 }

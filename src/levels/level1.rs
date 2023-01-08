@@ -50,7 +50,6 @@ fn init(
   mut texture_atlases: ResMut<Assets<TextureAtlas>>,
   mut state: ResMut<GameData>,
 ) {
-  state.score = 0;
   state.camera_pos = Vec2::default();
 
   let texture_handle = asset_server.load("player_96x32.png");
@@ -219,6 +218,7 @@ fn init(
         .build(),
     },
     &asset_server,
+    &*state,
   );
 
   create_player(
@@ -233,6 +233,7 @@ fn init(
         .build(),
     },
     &asset_server,
+    &*state,
   );
 }
 

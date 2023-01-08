@@ -2,7 +2,7 @@ use crate::components::*;
 use crate::weapons::gun::*;
 use crate::weapons::laser::*;
 use crate::weapons::lightning::*;
-use crate::Action;
+use crate::{Action,GameData};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
@@ -19,13 +19,15 @@ pub fn create_player(
   texture_atlas: Handle<TextureAtlas>,
   input_manager: InputManagerBundle<Action>,
   asset_server: &Res<AssetServer>,
+  data: &GameData,
 ) {
   commands
     .spawn((
       OnGameScreen,
       player,
       Gun {
-        cooldown: Timer::from_seconds(0.2, TimerMode::Repeating),
+        cooldown: Timer::from_seconds(data.gun_cooldown, TimerMode::Repeating),
+        damage: data.gun_damage,
       },
       ActiveEvents::COLLISION_EVENTS,
       CollisionGroups::new(Group::GROUP_1, Group::GROUP_3.union(Group::GROUP_6)),

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{despawn_screen, GameState, GameData};
+use crate::{despawn_screen, GameData, GameState};
 
 pub struct UpgradesPlugin;
 
@@ -29,14 +29,15 @@ const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 #[derive(Component)]
 enum MenuButtonAction {
-  IncreaseDamage,
-  IncreaseFireRate,
+  GunIncreaseDamage,
+  GunIncreaseFireRate,
+  LightningGunIncreaseSize,
+  LaserIncreaseDamage,
   LevelSelect,
 }
 
 #[derive(Component)]
 struct CurrentMoney;
-
 
 fn menu_action(
   interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>)>,
@@ -47,27 +48,45 @@ fn menu_action(
   for (interaction, menu_button_action) in &interaction_query {
     if *interaction == Interaction::Clicked {
       match menu_button_action {
-        MenuButtonAction::IncreaseDamage => {
+        MenuButtonAction::GunIncreaseDamage => {
           if data.money >= 50 {
             data.gun_damage += 20.0;
             data.money -= 50;
             for mut display in money_display.iter_mut() {
-              display.sections[0].value = format!("${:?}", data.money);
+              display.sections[0].value = format!("Available money ${:?}", data.money);
             }
           }
-        },
-        MenuButtonAction::IncreaseFireRate => {
+        }
+        MenuButtonAction::GunIncreaseFireRate => {
           if data.money >= 50 {
             data.gun_cooldown = data.gun_cooldown * 0.9;
             data.money -= 50;
             for mut display in money_display.iter_mut() {
-              display.sections[0].value = format!("${:?}", data.money);
+              display.sections[0].value = format!("Available money ${:?}", data.money);
             }
           }
-        },
+        }
+        MenuButtonAction::LaserIncreaseDamage => {
+          if data.money >= 100 {
+            data.laser_gun.damage += 100.0;
+            data.money -= 100;
+            for mut display in money_display.iter_mut() {
+              display.sections[0].value = format!("Available money ${:?}", data.money);
+            }
+          }
+        }
+        MenuButtonAction::LightningGunIncreaseSize => {
+          if data.money >= 100 {
+            data.lightning_gun.size += 0.5;
+            data.money -= 100;
+            for mut display in money_display.iter_mut() {
+              display.sections[0].value = format!("Available money ${:?}", data.money);
+            }
+          }
+        }
         MenuButtonAction::LevelSelect => {
           game_state.set(GameState::LevelSelect).unwrap();
-        },
+        }
       }
     }
   }
@@ -87,11 +106,7 @@ fn button_system(
   }
 }
 
-fn setup(
-  mut commands: Commands,
-  asset_server: Res<AssetServer>,
-  state: Res<GameData>,
-) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>, state: Res<GameData>) {
   let font = asset_server.load("font.ttf");
   let button_text_style = TextStyle {
     font: font.clone(),
@@ -119,7 +134,9 @@ fn setup(
         ..default()
       },
       OnMenuScreen,
-    )).with_children(|parent| {
+    ))
+    .with_children(|parent| {
+      // level selection section
       parent
         .spawn((
           ButtonBundle {
@@ -136,10 +153,11 @@ fn setup(
           ));
         });
 
+      // money section
       parent.spawn((
         CurrentMoney,
         TextBundle::from_section(
-          format!("${:?}", state.money),
+          format!("Available money ${:?}", state.money),
           TextStyle {
             font: font.clone(),
             font_size: 40.0,
@@ -150,55 +168,166 @@ fn setup(
         .with_style(Style {
           margin: UiRect::all(Val::Px(50.0)),
           ..default()
-        })
+        }),
       ));
 
-      parent.spawn((
-        NodeBundle {
-          style: Style {
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            flex_direction: FlexDirection::Row,
-            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+      // upgrade section
+      parent
+        .spawn((
+          NodeBundle {
+            style: Style {
+              align_items: AlignItems::Center,
+              justify_content: JustifyContent::Center,
+              flex_direction: FlexDirection::Row,
+              size: Size::new(Val::Percent(100.0), Val::Percent(50.0)),
+              ..default()
+            },
             ..default()
           },
-          ..default()
-        },
-        OnMenuScreen,
-      ))
-      .with_children(|parent| {
-        parent
-          .spawn((
-            ButtonBundle {
-              style: button_style.clone(),
-              background_color: NORMAL_BUTTON.into(),
-              ..default()
-            },
-            MenuButtonAction::IncreaseFireRate,
-          ))
-          .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-              "Fire rate $50",
-              button_text_style.clone(),
-            ));
-          });
-  
-        parent
-          .spawn((
-            ButtonBundle {
-              style: button_style.clone(),
-              background_color: NORMAL_BUTTON.into(),
-              ..default()
-            },
-            MenuButtonAction::IncreaseDamage,
-          ))
-          .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-              "Damage $50",
-              button_text_style.clone(),
-            ));
-          });
-      });
+          OnMenuScreen,
+        ))
+        .with_children(|parent| {
+          // Gun column
+          parent
+            .spawn((
+              NodeBundle {
+                style: Style {
+                  align_items: AlignItems::Center,
+                  justify_content: JustifyContent::FlexStart,
+                  flex_direction: FlexDirection::Column,
+                  size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                  ..default()
+                },
+                ..default()
+              },
+              OnMenuScreen,
+            ))
+            .with_children(|parent| {
+              parent.spawn(ImageBundle {
+                style: Style {
+                  size: Size::new(Val::Px(64.0), Val::Px(64.0)),
+                  ..default()
+                },
+                image: UiImage::from(asset_server.load("projectile.png")),
+                ..default()
+              });
 
+              parent
+                .spawn((
+                  ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                  },
+                  MenuButtonAction::GunIncreaseFireRate,
+                ))
+                .with_children(|parent| {
+                  parent.spawn(TextBundle::from_section(
+                    "Fire rate $50",
+                    button_text_style.clone(),
+                  ));
+                });
+
+              parent
+                .spawn((
+                  ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                  },
+                  MenuButtonAction::GunIncreaseDamage,
+                ))
+                .with_children(|parent| {
+                  parent.spawn(TextBundle::from_section(
+                    "Damage $50",
+                    button_text_style.clone(),
+                  ));
+                });
+            });
+
+          // laser column
+          parent
+            .spawn((
+              NodeBundle {
+                style: Style {
+                  align_items: AlignItems::Center,
+                  justify_content: JustifyContent::FlexStart,
+                  flex_direction: FlexDirection::Column,
+                  size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                  ..default()
+                },
+                ..default()
+              },
+              OnMenuScreen,
+            ))
+            .with_children(|parent| {
+              parent.spawn(ImageBundle {
+                style: Style {
+                  size: Size::new(Val::Px(64.0), Val::Px(64.0)),
+                  ..default()
+                },
+                image: UiImage::from(asset_server.load("laser_icon.png")),
+                ..default()
+              });
+
+              parent
+                .spawn((
+                  ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                  },
+                  MenuButtonAction::LaserIncreaseDamage,
+                ))
+                .with_children(|parent| {
+                  parent.spawn(TextBundle::from_section(
+                    "Damage $100",
+                    button_text_style.clone(),
+                  ));
+                });
+            });
+
+          // lightning column
+          parent
+            .spawn((
+              NodeBundle {
+                style: Style {
+                  align_items: AlignItems::Center,
+                  justify_content: JustifyContent::FlexStart,
+                  flex_direction: FlexDirection::Column,
+                  size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                  ..default()
+                },
+                ..default()
+              },
+              OnMenuScreen,
+            ))
+            .with_children(|parent| {
+              parent.spawn(ImageBundle {
+                style: Style {
+                  size: Size::new(Val::Px(64.0), Val::Px(64.0)),
+                  ..default()
+                },
+                image: UiImage::from(asset_server.load("lightning_icon.png")),
+                ..default()
+              });
+
+              parent
+                .spawn((
+                  ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                  },
+                  MenuButtonAction::LightningGunIncreaseSize,
+                ))
+                .with_children(|parent| {
+                  parent.spawn(TextBundle::from_section(
+                    "Size $100",
+                    button_text_style.clone(),
+                  ));
+                });
+            });
+        });
     });
 }

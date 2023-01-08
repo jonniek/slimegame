@@ -9,10 +9,25 @@ use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
 
+#[derive(Debug)]
+pub struct LaserGunConfig {
+  pub cooldown: f32,
+  pub damage: f32,
+}
+
 #[derive(Component, Debug)]
 pub struct LaserGun {
   pub cooldown: Timer,
   pub damage: f32,
+}
+
+impl LaserGun {
+  pub fn from_config(config: &LaserGunConfig) -> LaserGun {
+    LaserGun {
+      cooldown: Timer::from_seconds(config.cooldown, TimerMode::Once),
+      damage: config.damage,
+    }
+  }
 }
 
 #[derive(Component, Debug)]
@@ -68,7 +83,9 @@ pub fn spawn_laser(
         laser_gun.cooldown.reset();
         commands.spawn((
           OnGameScreen,
-          Laser { damage: laser_gun.damage },
+          Laser {
+            damage: laser_gun.damage,
+          },
           ExpirationTimer(Timer::from_seconds(1.75, TimerMode::Once)),
           ActiveEvents::COLLISION_EVENTS,
           Sensor,

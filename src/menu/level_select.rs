@@ -37,7 +37,6 @@ enum MenuButtonAction {
 #[derive(Component)]
 struct CurrentMoney;
 
-
 fn menu_action(
   interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>)>,
   mut game_state: ResMut<State<GameState>>,
@@ -47,13 +46,13 @@ fn menu_action(
       match menu_button_action {
         MenuButtonAction::Level1 => {
           game_state.set(GameState::Level1).unwrap();
-        },
+        }
         MenuButtonAction::Level2 => {
           game_state.set(GameState::Level2).unwrap();
-        },
+        }
         MenuButtonAction::Upgrades => {
           game_state.set(GameState::Upgrades).unwrap();
-        },
+        }
       }
     }
   }
@@ -73,10 +72,7 @@ fn button_system(
   }
 }
 
-fn setup(
-  mut commands: Commands,
-  asset_server: Res<AssetServer>,
-) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
   let font = asset_server.load("font.ttf");
   let button_text_style = TextStyle {
     font: font.clone(),
@@ -104,7 +100,8 @@ fn setup(
         ..default()
       },
       OnMenuScreen,
-    )).with_children(|parent| {
+    ))
+    .with_children(|parent| {
       parent
         .spawn((
           ButtonBundle {
@@ -121,51 +118,52 @@ fn setup(
           ));
         });
 
-      parent.spawn((
-        NodeBundle {
-          style: Style {
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            flex_direction: FlexDirection::Row,
-            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+      parent
+        .spawn((
+          NodeBundle {
+            style: Style {
+              align_items: AlignItems::Center,
+              justify_content: JustifyContent::Center,
+              flex_direction: FlexDirection::Row,
+              size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+              ..default()
+            },
             ..default()
           },
-          ..default()
-        },
-        OnMenuScreen,
-      ))
-      .with_children(|parent| {
-        parent
-          .spawn((
-            ButtonBundle {
-              style: button_style.clone(),
-              background_color: NORMAL_BUTTON.into(),
-              ..default()
-            },
-            MenuButtonAction::Level1,
-          ))
-          .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-              "Level 1",
-              button_text_style.clone(),
-            ));
-          });
-  
-        parent
-          .spawn((
-            ButtonBundle {
-              style: button_style.clone(),
-              background_color: NORMAL_BUTTON.into(),
-              ..default()
-            },
-            MenuButtonAction::Level2,
-          ))
-          .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-              "Level 2",
-              button_text_style.clone(),
-            ));
-          });
-      });
+          OnMenuScreen,
+        ))
+        .with_children(|parent| {
+          parent
+            .spawn((
+              ButtonBundle {
+                style: button_style.clone(),
+                background_color: NORMAL_BUTTON.into(),
+                ..default()
+              },
+              MenuButtonAction::Level1,
+            ))
+            .with_children(|parent| {
+              parent.spawn(TextBundle::from_section(
+                "Level 1",
+                button_text_style.clone(),
+              ));
+            });
+
+          parent
+            .spawn((
+              ButtonBundle {
+                style: button_style.clone(),
+                background_color: NORMAL_BUTTON.into(),
+                ..default()
+              },
+              MenuButtonAction::Level2,
+            ))
+            .with_children(|parent| {
+              parent.spawn(TextBundle::from_section(
+                "Level 2",
+                button_text_style.clone(),
+              ));
+            });
+        });
     });
 }

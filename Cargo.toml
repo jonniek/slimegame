@@ -11,6 +11,8 @@ bevy_rapier2d = { version = "0.19.0", features = [ "simd-stable", "debug-render"
 rand = "0.8.5"
 leafwing-input-manager = "0.7.1"
 bevy_prototype_lyon = "0.7.2"
+bevy-inspector-egui = "0.16.5"
+
 
 
 # cargo build --release --target wasm32-unknown-unknown

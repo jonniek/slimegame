@@ -2,7 +2,7 @@ use crate::components::*;
 use crate::weapons::gun::*;
 use crate::weapons::laser::*;
 use crate::weapons::lightning::*;
-use crate::{Action,GameData};
+use crate::{Action, GameData};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
@@ -46,11 +46,7 @@ pub fn create_player(
         Player::One => {
           parent.spawn((
             OnGameScreen,
-            LightningGun {
-              cooldown: Timer::from_seconds(6.0, TimerMode::Once),
-              damage: 100.0,
-              size: 2.5,
-            },
+            LightningGun::from_config(&data.lightning_gun),
             SpriteBundle {
               texture: asset_server.load("lightning_icon.png"),
               visibility: Visibility::INVISIBLE,
@@ -66,10 +62,7 @@ pub fn create_player(
         Player::Two => {
           parent.spawn((
             OnGameScreen,
-            LaserGun {
-              cooldown: Timer::from_seconds(8.0, TimerMode::Once),
-              damage: 500.0,
-            },
+            LaserGun::from_config(&data.laser_gun),
             SpriteBundle {
               texture: asset_server.load("laser_icon.png"),
               visibility: Visibility::INVISIBLE,

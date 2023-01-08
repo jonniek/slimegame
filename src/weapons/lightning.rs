@@ -6,11 +6,28 @@ use crate::DamageEvent;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
+#[derive(Debug)]
+pub struct LightningGunConfig {
+  pub cooldown: f32,
+  pub damage: f32,
+  pub size: f32,
+}
+
 #[derive(Component, Debug)]
 pub struct LightningGun {
   pub cooldown: Timer,
   pub damage: f32,
   pub size: f32,
+}
+
+impl LightningGun {
+  pub fn from_config(config: &LightningGunConfig) -> LightningGun {
+    LightningGun {
+      cooldown: Timer::from_seconds(config.cooldown, TimerMode::Once),
+      damage: config.damage,
+      size: config.size,
+    }
+  }
 }
 
 pub fn spawn_lightning(

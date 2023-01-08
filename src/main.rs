@@ -3,11 +3,13 @@ use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
 
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
+
 mod camera;
 mod components;
 mod enemy;
-mod menu;
 mod levels;
+mod menu;
 mod player;
 mod systems;
 mod weapons;
@@ -33,16 +35,27 @@ pub struct GameData {
   camera_pos: Vec2,
   gun_cooldown: f32,
   gun_damage: f32,
+  lightning_gun: weapons::lightning::LightningGunConfig,
+  laser_gun: weapons::laser::LaserGunConfig,
 }
 
 impl Default for GameData {
   fn default() -> Self {
-      GameData {
-        money: 100,
-        camera_pos: Vec2::default(),
-        gun_cooldown: 1.5,
-        gun_damage: 20.0,
-      }
+    GameData {
+      money: 1000,
+      camera_pos: Vec2::default(),
+      gun_cooldown: 1.5,
+      gun_damage: 20.0,
+      lightning_gun: weapons::lightning::LightningGunConfig {
+        cooldown: 10.0,
+        damage: 100.0,
+        size: 2.5,
+      },
+      laser_gun: weapons::laser::LaserGunConfig {
+        cooldown: 10.0,
+        damage: 500.0,
+      },
+    }
   }
 }
 
@@ -59,13 +72,18 @@ pub struct DamageEvent {
 
 fn main() {
   App::new()
-    .add_plugins(DefaultPlugins.set(WindowPlugin {
-      window: WindowDescriptor {
-        title: "slimegame".into(),
-        ..default()
-      },
-      ..default()
-    }))
+    .add_plugins(
+      DefaultPlugins
+        .set(WindowPlugin {
+          window: WindowDescriptor {
+            title: "slimegame".into(),
+            ..default()
+          },
+          ..default()
+        })
+        .set(ImagePlugin::default_nearest()),
+    )
+    .add_plugin(WorldInspectorPlugin)
     .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
     .insert_resource(RapierConfiguration {
       gravity: Vec2::ZERO,

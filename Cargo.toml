@@ -12,6 +12,8 @@ rand = "0.8.5"
 leafwing-input-manager = "0.7.1"
 bevy_prototype_lyon = "0.7.2"
 bevy-inspector-egui = "0.16.5"
+bevy_pkv = "0.6.0"
+serde = "1.0.152"
 
 
 

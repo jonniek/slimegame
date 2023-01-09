@@ -37,7 +37,9 @@ impl Plugin for Level1Plugin {
       )
       // When exiting the state, despawn everything that was spawned for this screen
       .add_system_set(
-        SystemSet::on_exit(GameState::Level1).with_system(despawn_screen::<OnGameScreen>),
+        SystemSet::on_exit(GameState::Level1)
+          .with_system(despawn_screen::<OnGameScreen>)
+          .with_system(systems::save_game),
       );
   }
 }

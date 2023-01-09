@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{despawn_screen, GameState};
+use crate::{despawn_screen, GameState, GameData};
 
 pub struct MainMenuPlugin;
 
@@ -29,19 +29,27 @@ const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 #[derive(Component)]
 enum MenuButtonAction {
-  Play,
+  NewGame,
+  Continue,
 }
 
 fn menu_action(
   interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>)>,
   mut game_state: ResMut<State<GameState>>,
+  mut game_data: ResMut<GameData>,
 ) {
   for (interaction, menu_button_action) in &interaction_query {
     if *interaction == Interaction::Clicked {
       match menu_button_action {
-        MenuButtonAction::Play => {
+        MenuButtonAction::NewGame => {
+          // start a fresh save
+          *game_data = GameData::default();
+
           game_state.set(GameState::LevelSelect).unwrap();
-        }
+        },
+        MenuButtonAction::Continue => {
+          game_state.set(GameState::LevelSelect).unwrap();
+        },
       }
     }
   }
@@ -61,7 +69,11 @@ fn button_system(
   }
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(
+  mut commands: Commands,
+  asset_server: Res<AssetServer>,
+  game_data: Res<GameData>,
+) {
   let font = asset_server.load("font.ttf");
   let icon = asset_server.load("player.png");
   let button_text_style = TextStyle {
@@ -101,6 +113,21 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
       });
 
+      if !game_data.new_game {
+        parent
+          .spawn((
+            ButtonBundle {
+              style: button_style.clone(),
+              background_color: NORMAL_BUTTON.into(),
+              ..default()
+            },
+            MenuButtonAction::Continue,
+          ))
+          .with_children(|parent| {
+            parent.spawn(TextBundle::from_section("Continue game", button_text_style.clone()));
+          });
+      }
+
       parent
         .spawn((
           ButtonBundle {
@@ -108,10 +135,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             background_color: NORMAL_BUTTON.into(),
             ..default()
           },
-          MenuButtonAction::Play,
+          MenuButtonAction::NewGame,
         ))
         .with_children(|parent| {
-          parent.spawn(TextBundle::from_section("Play", button_text_style.clone()));
+          parent.spawn(TextBundle::from_section("New game", button_text_style.clone()));
         });
     });
 }

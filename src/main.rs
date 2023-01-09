@@ -2,6 +2,9 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
+use bevy_pkv::PkvStore;
+use serde::{Serialize, Deserialize};
+
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
@@ -37,8 +40,9 @@ pub fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut comm
   }
 }
 
-#[derive(Resource, Debug)]
+#[derive(Resource, Serialize, Deserialize, Debug)]
 pub struct GameData {
+  new_game: bool,
   money: i32,
   camera_pos: Vec2,
   gun_cooldown: f32,
@@ -50,6 +54,7 @@ pub struct GameData {
 impl Default for GameData {
   fn default() -> Self {
     GameData {
+      new_game: true,
       money: 1000,
       camera_pos: Vec2::default(),
       gun_cooldown: 1.5,
@@ -100,8 +105,10 @@ fn main() {
     .insert_resource(ClearColor(Color::rgb(0.7, 0.6, 0.5)))
     // .add_plugin(RapierDebugRenderPlugin::default())
     .init_resource::<GameData>()
+    .insert_resource(PkvStore::new("Slime", "Game"))
     .add_startup_system(camera::setup_camera)
     .add_startup_system(systems::initialize_texture_atlas)
+    .add_startup_system(systems::load_game)
     .add_system(bevy::window::close_on_esc)
     .add_state(GameState::MainMenu)
     .add_plugin(ShapePlugin)

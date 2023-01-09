@@ -8,8 +8,9 @@ use bevy_prototype_lyon::prelude::FillMode;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug)]
+#[derive(Debug,Serialize, Deserialize)]
 pub struct LaserGunConfig {
   pub cooldown: f32,
   pub damage: f32,

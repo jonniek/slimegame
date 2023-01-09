@@ -5,8 +5,33 @@ use crate::weapons::gun::Projectile;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::CollisionEvent::Started;
 use bevy_rapier2d::prelude::*;
+use bevy_pkv::PkvStore;
 
 use crate::{DamageEvent, GameData, TextureAtlasHandles};
+
+pub fn save_game(
+  mut data: ResMut<GameData>,
+  mut pkv: ResMut<PkvStore>,
+) {
+  data.new_game = false;
+  match pkv.set("game_save", data.as_ref()) {
+    Ok(_) => println!("Game quick saved"),
+    Err(e) => eprintln!("Game quick save failed: {}", e),
+  }
+}
+
+pub fn load_game(
+  mut data: ResMut<GameData>,
+  pkv: ResMut<PkvStore>,
+) {
+  match pkv.get::<GameData>("game_save") {
+    Ok(save) => {
+      println!("game loaded {:?}", save);
+      *data = save
+    },
+    Err(e) => eprintln!("Game load failed: {}", e)
+  }
+}
 
 pub fn initialize_texture_atlas(
   mut commands: Commands,

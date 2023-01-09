@@ -302,7 +302,7 @@ pub fn handle_explosion(
             Restitution::coefficient(0.7),
           ));
       }
-    
+
       commands.entity(entity).despawn();
     }
   }

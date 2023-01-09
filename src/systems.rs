@@ -98,7 +98,7 @@ pub fn handle_despawn_entity(
       Err(_) => match commands.get_entity(event.entity) {
         Some(cmd) => cmd.despawn_recursive(),
         None => (),
-      }
+      },
     }
   }
 }

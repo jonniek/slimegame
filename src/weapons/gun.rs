@@ -1,6 +1,6 @@
 use crate::components::*;
-use crate::player::Player;
 use crate::enemy::Enemy;
+use crate::player::Player;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
@@ -16,10 +16,7 @@ pub struct Gun {
   pub damage: f32,
 }
 
-fn closest_enemy(
-  transform: &Transform,
-  enemies: &Query<&Transform, With<Enemy>>,
-) -> Option<Vec3> {
+fn closest_enemy(transform: &Transform, enemies: &Query<&Transform, With<Enemy>>) -> Option<Vec3> {
   let mut closest: Option<Vec3> = None;
 
   for player in enemies.iter() {

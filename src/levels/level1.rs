@@ -135,6 +135,7 @@ fn end_condition(
   enemies: Query<&Enemy>,
   spawners: Query<&EnemySpawner>,
   mut game_state: ResMut<State<GameState>>,
+  mut data: ResMut<GameData>,
   mut level_end_timer: ResMut<LevelEndTimer>,
   time: Res<Time>,
 ) {
@@ -145,6 +146,9 @@ fn end_condition(
       .all(|spawner| spawner.spawn_count >= spawner.spawn_limit)
   {
     if level_end_timer.timer.tick(time.delta()).finished() {
+      if data.level < 2 {
+        data.level = 2;
+      }
       game_state.set(GameState::LevelSelect).unwrap()
     }
   }

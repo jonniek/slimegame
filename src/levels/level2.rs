@@ -193,6 +193,7 @@ fn end_condition(
   mut game_state: ResMut<State<GameState>>,
   mut level_end_timer: ResMut<LevelEndTimer>,
   time: Res<Time>,
+  mut data: ResMut<GameData>,
 ) {
   // game won
   if enemies.is_empty()
@@ -201,6 +202,9 @@ fn end_condition(
       .all(|spawner| spawner.spawn_count >= spawner.spawn_limit)
   {
     if level_end_timer.timer.tick(time.delta()).finished() {
+      if data.level < 3 {
+        data.level = 3;
+      }
       game_state.set(GameState::LevelSelect).unwrap()
     }
   }

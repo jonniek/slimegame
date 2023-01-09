@@ -44,6 +44,7 @@ pub fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut comm
 #[derive(Resource, Serialize, Deserialize, Debug)]
 pub struct GameData {
   new_game: bool,
+  level: usize,
   money: i32,
   camera_pos: Vec2,
   gun_cooldown: f32,
@@ -56,6 +57,7 @@ impl Default for GameData {
   fn default() -> Self {
     GameData {
       new_game: true,
+      level: 1,
       money: 200,
       camera_pos: Vec2::default(),
       gun_cooldown: 1.5,

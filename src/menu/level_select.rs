@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{despawn_screen, GameState};
+use crate::{despawn_screen, GameData, GameState};
 
 pub struct LevelSelectPlugin;
 
@@ -76,7 +76,7 @@ fn button_system(
   }
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>, data: Res<GameData>) {
   let font = asset_server.load("font.ttf");
   let button_text_style = TextStyle {
     font: font.clone(),
@@ -153,37 +153,41 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
               ));
             });
 
-          parent
-            .spawn((
-              ButtonBundle {
-                style: button_style.clone(),
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-              },
-              MenuButtonAction::Level2,
-            ))
-            .with_children(|parent| {
-              parent.spawn(TextBundle::from_section(
-                "Level 2",
-                button_text_style.clone(),
-              ));
-            });
+          if data.level >= 2 {
+            parent
+              .spawn((
+                ButtonBundle {
+                  style: button_style.clone(),
+                  background_color: NORMAL_BUTTON.into(),
+                  ..default()
+                },
+                MenuButtonAction::Level2,
+              ))
+              .with_children(|parent| {
+                parent.spawn(TextBundle::from_section(
+                  "Level 2",
+                  button_text_style.clone(),
+                ));
+              });
+          }
 
-          parent
-            .spawn((
-              ButtonBundle {
-                style: button_style.clone(),
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-              },
-              MenuButtonAction::Level3,
-            ))
-            .with_children(|parent| {
-              parent.spawn(TextBundle::from_section(
-                "Level 3",
-                button_text_style.clone(),
-              ));
-            });
+          if data.level >= 3 {
+            parent
+              .spawn((
+                ButtonBundle {
+                  style: button_style.clone(),
+                  background_color: NORMAL_BUTTON.into(),
+                  ..default()
+                },
+                MenuButtonAction::Level3,
+              ))
+              .with_children(|parent| {
+                parent.spawn(TextBundle::from_section(
+                  "Level 3",
+                  button_text_style.clone(),
+                ));
+              });
+          }
         });
     });
 }

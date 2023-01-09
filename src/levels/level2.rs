@@ -37,6 +37,7 @@ impl Plugin for Level2Plugin {
           .with_system(generic_spawner)
           .with_system(handle_explosion)
           .with_system(systems::handle_collision)
+          .with_system(systems::deal_red_zone_dmg)
           .with_system(systems::handle_despawn_entity)
           .with_system(end_condition),
       )
@@ -93,7 +94,7 @@ pub fn init(
       timer: Timer::from_seconds(0.01, TimerMode::Repeating),
       initial_delay: Timer::from_seconds(25.0, TimerMode::Once),
       spawn_count: 0,
-      spawn_limit: 32,
+      spawn_limit: 12,
       enemy_type: EnemySpawnerType::Elite,
     },
   ));
@@ -112,7 +113,7 @@ pub fn init(
       timer: Timer::from_seconds(0.01, TimerMode::Repeating),
       initial_delay: Timer::from_seconds(25.0, TimerMode::Once),
       spawn_count: 0,
-      spawn_limit: 32,
+      spawn_limit: 12,
       enemy_type: EnemySpawnerType::Elite,
     },
   ));
@@ -131,7 +132,7 @@ pub fn init(
       timer: Timer::from_seconds(0.01, TimerMode::Repeating),
       initial_delay: Timer::from_seconds(25.0, TimerMode::Once),
       spawn_count: 0,
-      spawn_limit: 32,
+      spawn_limit: 12,
       enemy_type: EnemySpawnerType::Elite,
     },
   ));
@@ -150,7 +151,7 @@ pub fn init(
       timer: Timer::from_seconds(0.01, TimerMode::Repeating),
       initial_delay: Timer::from_seconds(25.0, TimerMode::Once),
       spawn_count: 0,
-      spawn_limit: 32,
+      spawn_limit: 12,
       enemy_type: EnemySpawnerType::Elite,
     },
   ));
@@ -205,6 +206,7 @@ fn end_condition(
       if data.level < 3 {
         data.level = 3;
       }
+      data.money += 100;
       game_state.set(GameState::LevelSelect).unwrap()
     }
   }

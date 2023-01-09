@@ -34,6 +34,7 @@ enum MenuButtonAction {
   LightningGunIncreaseSize,
   LaserIncreaseDamage,
   LevelSelect,
+  PlayerMsIncrease,
 }
 
 #[derive(Component)]
@@ -78,6 +79,15 @@ fn menu_action(
         MenuButtonAction::LightningGunIncreaseSize => {
           if data.money >= 100 {
             data.lightning_gun.size += 0.5;
+            data.money -= 100;
+            for mut display in money_display.iter_mut() {
+              display.sections[0].value = format!("Available money ${:?}", data.money);
+            }
+          }
+        }
+        MenuButtonAction::PlayerMsIncrease => {
+          if data.money >= 100 {
+            data.player_ms += 10.0;
             data.money -= 100;
             for mut display in money_display.iter_mut() {
               display.sections[0].value = format!("Available money ${:?}", data.money);
@@ -324,6 +334,48 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, state: Res<Game
                 .with_children(|parent| {
                   parent.spawn(TextBundle::from_section(
                     "Size $100",
+                    button_text_style.clone(),
+                  ));
+                });
+            });
+
+          // player column
+          parent
+            .spawn((
+              NodeBundle {
+                style: Style {
+                  align_items: AlignItems::Center,
+                  justify_content: JustifyContent::FlexStart,
+                  flex_direction: FlexDirection::Column,
+                  size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                  ..default()
+                },
+                ..default()
+              },
+              OnMenuScreen,
+            ))
+            .with_children(|parent| {
+              parent.spawn(ImageBundle {
+                style: Style {
+                  size: Size::new(Val::Px(64.0), Val::Px(64.0)),
+                  ..default()
+                },
+                image: UiImage::from(asset_server.load("player.png")),
+                ..default()
+              });
+
+              parent
+                .spawn((
+                  ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                  },
+                  MenuButtonAction::PlayerMsIncrease,
+                ))
+                .with_children(|parent| {
+                  parent.spawn(TextBundle::from_section(
+                    "Speed $100",
                     button_text_style.clone(),
                   ));
                 });

@@ -46,6 +46,7 @@ pub struct GameData {
   new_game: bool,
   level: usize,
   money: i32,
+  player_ms: f32,
   camera_pos: Vec2,
   gun_cooldown: f32,
   gun_damage: f32,
@@ -59,6 +60,7 @@ impl Default for GameData {
       new_game: true,
       level: 1,
       money: 200,
+      player_ms: 100.0,
       camera_pos: Vec2::default(),
       gun_cooldown: 1.5,
       gun_damage: 20.0,
@@ -116,13 +118,13 @@ fn main() {
         })
         .set(ImagePlugin::default_nearest()),
     )
-    .add_plugin(WorldInspectorPlugin)
     .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
     .insert_resource(RapierConfiguration {
       gravity: Vec2::ZERO,
       ..default()
     })
     .insert_resource(ClearColor(Color::rgb(0.7, 0.6, 0.5)))
+    // .add_plugin(WorldInspectorPlugin)
     // .add_plugin(RapierDebugRenderPlugin::default())
     .init_resource::<GameData>()
     .init_resource::<LevelEndTimer>()

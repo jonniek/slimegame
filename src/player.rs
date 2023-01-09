@@ -13,6 +13,11 @@ pub enum Player {
   Two,
 }
 
+#[derive(Component)]
+pub struct Movement {
+  speed: f32,
+}
+
 pub fn create_player(
   commands: &mut Commands,
   player: Player,
@@ -25,6 +30,9 @@ pub fn create_player(
     .spawn((
       OnGameScreen,
       player,
+      Movement {
+        speed: data.player_ms,
+      },
       Gun {
         cooldown: Timer::from_seconds(data.gun_cooldown, TimerMode::Repeating),
         damage: data.gun_damage,
@@ -89,14 +97,13 @@ pub fn create_player(
 }
 
 pub fn player_movement(
-  mut player_query: Query<(&mut Velocity, &ActionState<Action>), With<Player>>,
+  mut player_query: Query<(&mut Velocity, &ActionState<Action>, &Movement), With<Player>>,
 ) {
-  for (mut velocity, action_state) in player_query.iter_mut() {
+  for (mut velocity, action_state, movement) in player_query.iter_mut() {
     if action_state.pressed(Action::Move) {
       let mx_vec = action_state.clamped_axis_pair(Action::Move).unwrap().xy();
-      let distance = 100.0;
-      velocity.linvel.x = mx_vec.x * distance;
-      velocity.linvel.y = mx_vec.y * distance;
+      velocity.linvel.x = mx_vec.x * movement.speed;
+      velocity.linvel.y = mx_vec.y * movement.speed;
     } else {
       velocity.linvel.x = 0.0;
       velocity.linvel.y = 0.0;

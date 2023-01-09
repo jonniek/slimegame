@@ -149,6 +149,7 @@ fn end_condition(
       if data.level < 2 {
         data.level = 2;
       }
+      data.money += 50;
       game_state.set(GameState::LevelSelect).unwrap()
     }
   }

@@ -38,6 +38,7 @@ impl Plugin for Level3Plugin {
           .with_system(generic_spawner)
           .with_system(handle_explosion)
           .with_system(systems::handle_collision)
+          .with_system(systems::deal_red_zone_dmg)
           .with_system(systems::handle_despawn_entity.at_end())
           .with_system(end_condition.at_end()),
       )

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{despawn_screen, GameState, GameData};
+use crate::{despawn_screen, GameData, GameState};
 
 pub struct MainMenuPlugin;
 
@@ -46,10 +46,10 @@ fn menu_action(
           *game_data = GameData::default();
 
           game_state.set(GameState::LevelSelect).unwrap();
-        },
+        }
         MenuButtonAction::Continue => {
           game_state.set(GameState::LevelSelect).unwrap();
-        },
+        }
       }
     }
   }
@@ -69,11 +69,7 @@ fn button_system(
   }
 }
 
-fn setup(
-  mut commands: Commands,
-  asset_server: Res<AssetServer>,
-  game_data: Res<GameData>,
-) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>, game_data: Res<GameData>) {
   let font = asset_server.load("font.ttf");
   let icon = asset_server.load("player.png");
   let button_text_style = TextStyle {
@@ -124,7 +120,10 @@ fn setup(
             MenuButtonAction::Continue,
           ))
           .with_children(|parent| {
-            parent.spawn(TextBundle::from_section("Continue game", button_text_style.clone()));
+            parent.spawn(TextBundle::from_section(
+              "Continue game",
+              button_text_style.clone(),
+            ));
           });
       }
 
@@ -138,7 +137,10 @@ fn setup(
           MenuButtonAction::NewGame,
         ))
         .with_children(|parent| {
-          parent.spawn(TextBundle::from_section("New game", button_text_style.clone()));
+          parent.spawn(TextBundle::from_section(
+            "New game",
+            button_text_style.clone(),
+          ));
         });
     });
 }

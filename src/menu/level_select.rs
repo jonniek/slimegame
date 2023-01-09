@@ -31,6 +31,7 @@ const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 enum MenuButtonAction {
   Level1,
   Level2,
+  Level3,
   Upgrades,
 }
 
@@ -49,6 +50,9 @@ fn menu_action(
         }
         MenuButtonAction::Level2 => {
           game_state.set(GameState::Level2).unwrap();
+        }
+        MenuButtonAction::Level3 => {
+          game_state.set(GameState::Level3).unwrap();
         }
         MenuButtonAction::Upgrades => {
           game_state.set(GameState::Upgrades).unwrap();
@@ -161,6 +165,22 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             .with_children(|parent| {
               parent.spawn(TextBundle::from_section(
                 "Level 2",
+                button_text_style.clone(),
+              ));
+            });
+
+          parent
+            .spawn((
+              ButtonBundle {
+                style: button_style.clone(),
+                background_color: NORMAL_BUTTON.into(),
+                ..default()
+              },
+              MenuButtonAction::Level3,
+            ))
+            .with_children(|parent| {
+              parent.spawn(TextBundle::from_section(
+                "Level 3",
                 button_text_style.clone(),
               ));
             });

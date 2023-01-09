@@ -1,11 +1,14 @@
 use crate::camera;
 use crate::components::*;
 use crate::enemy::*;
+use crate::map;
 use crate::player::*;
 use crate::systems;
 use crate::weapons;
-use crate::map;
-use crate::{despawn_screen, Action, DamageEvent, GameData, GameState, TextureAtlasHandles};
+use crate::{
+  despawn_screen, Action, DamageEvent, DespawnEvent, GameData, GameState, LevelEndTimer,
+  TextureAtlasHandles,
+};
 
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
@@ -17,6 +20,7 @@ impl Plugin for Level1Plugin {
     app
       .add_system_set(SystemSet::on_enter(GameState::Level1).with_system(init))
       .add_event::<DamageEvent>()
+      .add_event::<DespawnEvent>()
       .add_system_set(
         SystemSet::on_update(GameState::Level1)
           .with_system(systems::clean_up_expired)
@@ -31,9 +35,10 @@ impl Plugin for Level1Plugin {
           .with_system(systems::handle_damage_event)
           .with_system(enemy_movement)
           .with_system(generic_spawner)
-          .with_system(kill_enemy)
+          .with_system(handle_explosion)
           .with_system(systems::handle_collision)
           .with_system(systems::deal_red_zone_dmg)
+          .with_system(systems::handle_despawn_entity)
           .with_system(end_condition),
       )
       // When exiting the state, despawn everything that was spawned for this screen
@@ -50,7 +55,10 @@ fn init(
   asset_server: Res<AssetServer>,
   textures: Res<TextureAtlasHandles>,
   state: ResMut<GameData>,
+  mut level_end_timer: ResMut<LevelEndTimer>,
 ) {
+  level_end_timer.timer.reset();
+
   map::create_map_boundary(&mut commands);
 
   commands.spawn((
@@ -127,6 +135,8 @@ fn end_condition(
   enemies: Query<&Enemy>,
   spawners: Query<&EnemySpawner>,
   mut game_state: ResMut<State<GameState>>,
+  mut level_end_timer: ResMut<LevelEndTimer>,
+  time: Res<Time>,
 ) {
   // game won
   if enemies.is_empty()
@@ -134,7 +144,9 @@ fn end_condition(
       .iter()
       .all(|spawner| spawner.spawn_count >= spawner.spawn_limit)
   {
-    game_state.set(GameState::LevelSelect).unwrap()
+    if level_end_timer.timer.tick(time.delta()).finished() {
+      game_state.set(GameState::LevelSelect).unwrap()
+    }
   }
 
   // game lost

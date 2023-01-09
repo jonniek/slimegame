@@ -7,7 +7,7 @@ use bevy_pkv::PkvStore;
 use bevy_rapier2d::prelude::CollisionEvent::Started;
 use bevy_rapier2d::prelude::*;
 
-use crate::{DamageEvent, GameData, TextureAtlasHandles};
+use crate::{DamageEvent, DespawnEvent, GameData, TextureAtlasHandles};
 
 pub fn save_game(mut data: ResMut<GameData>, mut pkv: ResMut<PkvStore>) {
   data.new_game = false;
@@ -59,27 +59,64 @@ pub fn initialize_texture_atlas(
   );
   let texture_atlas_handle_enemy2 = texture_atlases.add(texture_atlas_enemy2);
 
+  let texture_handle_enemy3 = asset_server.load("enemy_3_96x32.png");
+  let texture_atlas_enemy3 = TextureAtlas::from_grid(
+    texture_handle_enemy3,
+    Vec2::new(32.0, 32.0),
+    3,
+    1,
+    None,
+    None,
+  );
+  let texture_atlas_handle_enemy3 = texture_atlases.add(texture_atlas_enemy3);
+
   commands.insert_resource(TextureAtlasHandles {
     atlas_handle: texture_atlas_handle_enemy,
-    elite_atlas_handle: texture_atlas_handle_enemy2.clone(),
+    elite_atlas_handle: texture_atlas_handle_enemy2,
+    boss_atlas_handle: texture_atlas_handle_enemy3,
     player_atlas_handle: texture_atlas_handle,
   });
 }
 
-pub fn handle_damage_event(
+pub fn handle_despawn_entity(
   mut commands: Commands,
+  mut despawn_events: EventReader<DespawnEvent>,
+  enemy_query: Query<(&Enemy, Option<&Explode>)>,
+  mut state: ResMut<GameData>,
+) {
+  for event in despawn_events.iter() {
+    match enemy_query.get(event.entity) {
+      Ok((enemy, explosive)) => {
+        if explosive.is_none() {
+          state.money += enemy.reward;
+          match commands.get_entity(event.entity) {
+            Some(cmd) => cmd.despawn_recursive(),
+            None => (),
+          }
+        }
+      }
+      Err(_) => match commands.get_entity(event.entity) {
+        Some(cmd) => cmd.despawn_recursive(),
+        None => (),
+      }
+    }
+  }
+}
+
+pub fn handle_damage_event(
   mut damage_events: EventReader<DamageEvent>,
   mut entities_with_health: Query<(&mut Health, &mut TextureAtlasSprite)>,
   time: Res<Time>,
-  mut state: ResMut<GameData>,
+  mut despawn_events: EventWriter<DespawnEvent>,
 ) {
   for damage_event in damage_events.iter() {
     if let Ok((mut health, mut sprite)) = entities_with_health.get_mut(damage_event.entity) {
       health.current_health -= damage_event.damage;
 
       if health.current_health <= 0.0 {
-        commands.entity(damage_event.entity).despawn_recursive();
-        state.money += 1;
+        despawn_events.send(DespawnEvent {
+          entity: damage_event.entity,
+        });
       } else {
         sprite.color.set_r(200.0);
         sprite.color.set_g(200.0);
@@ -118,11 +155,11 @@ pub fn deal_red_zone_dmg(
 }
 
 pub fn handle_collision(
-  mut commands: Commands,
   projectiles: Query<&Projectile>,
   mut enemies: Query<(&mut Health, &mut TextureAtlasSprite), With<Enemy>>,
   mut collision_events: EventReader<CollisionEvent>,
   mut damage_event: EventWriter<DamageEvent>,
+  mut despawn_event: EventWriter<DespawnEvent>,
   player: Query<Entity, With<Player>>,
 ) {
   for collision in collision_events.iter() {
@@ -142,7 +179,7 @@ pub fn handle_collision(
           if let Ok(data) = projectiles.get(*entity1) {
             let damage = data.damage;
             if let Ok(_) = enemies.get_mut(*entity2) {
-              commands.entity(*entity1).despawn();
+              despawn_event.send(DespawnEvent { entity: *entity1 });
               damage_event.send(DamageEvent {
                 entity: entity2.clone(),
                 damage,
@@ -176,13 +213,13 @@ pub fn animate_sprite(
 
 pub fn clean_up_expired(
   time: Res<Time>,
-  mut commands: Commands,
   mut query: Query<(Entity, &mut ExpirationTimer)>,
+  mut despawn_events: EventWriter<DespawnEvent>,
 ) {
   for (entity, mut timer) in query.iter_mut() {
     timer.0.tick(time.delta());
     if timer.0.just_finished() {
-      commands.entity(entity).despawn();
+      despawn_events.send(DespawnEvent { entity })
     }
   }
 }

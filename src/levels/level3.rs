@@ -13,16 +13,16 @@ use crate::{
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
-pub struct Level2Plugin;
+pub struct Level3Plugin;
 
-impl Plugin for Level2Plugin {
+impl Plugin for Level3Plugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set(SystemSet::on_enter(GameState::Level2).with_system(init))
+      .add_system_set(SystemSet::on_enter(GameState::Level3).with_system(init))
       .add_event::<DamageEvent>()
       .add_event::<DespawnEvent>()
       .add_system_set(
-        SystemSet::on_update(GameState::Level2)
+        SystemSet::on_update(GameState::Level3)
           .with_system(systems::clean_up_expired)
           .with_system(systems::animate_sprite)
           .with_system(player_movement)
@@ -34,15 +34,16 @@ impl Plugin for Level2Plugin {
           .with_system(weapons::laser::handle_laser_collision)
           .with_system(systems::handle_damage_event)
           .with_system(enemy_movement)
+          .with_system(handle_charge.after(enemy_movement))
           .with_system(generic_spawner)
           .with_system(handle_explosion)
           .with_system(systems::handle_collision)
-          .with_system(systems::handle_despawn_entity)
-          .with_system(end_condition),
+          .with_system(systems::handle_despawn_entity.at_end())
+          .with_system(end_condition.at_end()),
       )
       // When exiting the state, despawn everything that was spawned for this screen
       .add_system_set(
-        SystemSet::on_exit(GameState::Level2)
+        SystemSet::on_exit(GameState::Level3)
           .with_system(despawn_screen::<OnGameScreen>)
           .with_system(systems::save_game),
       );
@@ -71,87 +72,11 @@ pub fn init(
       ..default()
     },
     EnemySpawner {
-      timer: Timer::from_seconds(0.3, TimerMode::Repeating),
-      initial_delay: Timer::from_seconds(2.0, TimerMode::Once),
+      timer: Timer::from_seconds(1.0, TimerMode::Repeating),
+      initial_delay: Timer::from_seconds(5.0, TimerMode::Once),
       spawn_count: 0,
-      spawn_limit: 60,
-      enemy_type: EnemySpawnerType::Normal,
-    },
-  ));
-
-  commands.spawn((
-    OnGameScreen,
-    SpriteBundle {
-      texture: asset_server.load("cave.png"),
-      transform: Transform {
-        translation: Vec3::new(400., -400., 0.0),
-        ..default()
-      },
-      ..default()
-    },
-    EnemySpawner {
-      timer: Timer::from_seconds(0.01, TimerMode::Repeating),
-      initial_delay: Timer::from_seconds(25.0, TimerMode::Once),
-      spawn_count: 0,
-      spawn_limit: 32,
-      enemy_type: EnemySpawnerType::Elite,
-    },
-  ));
-
-  commands.spawn((
-    OnGameScreen,
-    SpriteBundle {
-      texture: asset_server.load("cave.png"),
-      transform: Transform {
-        translation: Vec3::new(-400., -400., 0.0),
-        ..default()
-      },
-      ..default()
-    },
-    EnemySpawner {
-      timer: Timer::from_seconds(0.01, TimerMode::Repeating),
-      initial_delay: Timer::from_seconds(25.0, TimerMode::Once),
-      spawn_count: 0,
-      spawn_limit: 32,
-      enemy_type: EnemySpawnerType::Elite,
-    },
-  ));
-
-  commands.spawn((
-    OnGameScreen,
-    SpriteBundle {
-      texture: asset_server.load("cave.png"),
-      transform: Transform {
-        translation: Vec3::new(-400., 400., 0.0),
-        ..default()
-      },
-      ..default()
-    },
-    EnemySpawner {
-      timer: Timer::from_seconds(0.01, TimerMode::Repeating),
-      initial_delay: Timer::from_seconds(25.0, TimerMode::Once),
-      spawn_count: 0,
-      spawn_limit: 32,
-      enemy_type: EnemySpawnerType::Elite,
-    },
-  ));
-
-  commands.spawn((
-    OnGameScreen,
-    SpriteBundle {
-      texture: asset_server.load("cave.png"),
-      transform: Transform {
-        translation: Vec3::new(400., 400., 0.0),
-        ..default()
-      },
-      ..default()
-    },
-    EnemySpawner {
-      timer: Timer::from_seconds(0.01, TimerMode::Repeating),
-      initial_delay: Timer::from_seconds(25.0, TimerMode::Once),
-      spawn_count: 0,
-      spawn_limit: 32,
-      enemy_type: EnemySpawnerType::Elite,
+      spawn_limit: 1,
+      enemy_type: EnemySpawnerType::Boss,
     },
   ));
 
@@ -191,8 +116,8 @@ fn end_condition(
   enemies: Query<&Enemy>,
   spawners: Query<&EnemySpawner>,
   mut game_state: ResMut<State<GameState>>,
-  mut level_end_timer: ResMut<LevelEndTimer>,
   time: Res<Time>,
+  mut level_end_timer: ResMut<LevelEndTimer>,
 ) {
   // game won
   if enemies.is_empty()

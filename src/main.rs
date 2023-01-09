@@ -1,10 +1,9 @@
 use bevy::prelude::*;
+use bevy_pkv::PkvStore;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use leafwing_input_manager::prelude::*;
-use bevy_pkv::PkvStore;
-use serde::{Serialize, Deserialize};
-
+use serde::{Deserialize, Serialize};
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
@@ -12,11 +11,11 @@ mod camera;
 mod components;
 mod enemy;
 mod levels;
+mod map;
 mod menu;
 mod player;
 mod systems;
 mod weapons;
-mod map;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {
@@ -25,12 +24,14 @@ pub enum GameState {
   Upgrades,
   Level1,
   Level2,
+  Level3,
 }
 
 #[derive(Resource, Default)]
 pub struct TextureAtlasHandles {
   pub atlas_handle: Handle<TextureAtlas>,
   pub elite_atlas_handle: Handle<TextureAtlas>,
+  pub boss_atlas_handle: Handle<TextureAtlas>,
   pub player_atlas_handle: Handle<TextureAtlas>,
 }
 
@@ -55,7 +56,7 @@ impl Default for GameData {
   fn default() -> Self {
     GameData {
       new_game: true,
-      money: 1000,
+      money: 100,
       camera_pos: Vec2::default(),
       gun_cooldown: 1.5,
       gun_damage: 20.0,
@@ -83,6 +84,23 @@ pub struct DamageEvent {
   damage: f32,
 }
 
+pub struct DespawnEvent {
+  entity: Entity,
+}
+
+#[derive(Resource)]
+pub struct LevelEndTimer {
+  timer: Timer,
+}
+
+impl Default for LevelEndTimer {
+  fn default() -> Self {
+    LevelEndTimer {
+      timer: Timer::from_seconds(3.0, TimerMode::Once),
+    }
+  }
+}
+
 fn main() {
   App::new()
     .add_plugins(
@@ -105,6 +123,7 @@ fn main() {
     .insert_resource(ClearColor(Color::rgb(0.7, 0.6, 0.5)))
     // .add_plugin(RapierDebugRenderPlugin::default())
     .init_resource::<GameData>()
+    .init_resource::<LevelEndTimer>()
     .insert_resource(PkvStore::new("Slime", "Game"))
     .add_startup_system(camera::setup_camera)
     .add_startup_system(systems::initialize_texture_atlas)
@@ -118,5 +137,6 @@ fn main() {
     .add_plugin(menu::upgrades::UpgradesPlugin)
     .add_plugin(levels::level1::Level1Plugin)
     .add_plugin(levels::level2::Level2Plugin)
+    .add_plugin(levels::level3::Level3Plugin)
     .run();
 }

@@ -56,7 +56,7 @@ impl Default for GameData {
   fn default() -> Self {
     GameData {
       new_game: true,
-      money: 100,
+      money: 200,
       camera_pos: Vec2::default(),
       gun_cooldown: 1.5,
       gun_damage: 20.0,

@@ -1,5 +1,6 @@
 use crate::components::*;
 use crate::player::Player;
+use crate::enemy::Enemy;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
@@ -15,18 +16,41 @@ pub struct Gun {
   pub damage: f32,
 }
 
+fn closest_enemy(
+  transform: &Transform,
+  enemies: &Query<&Transform, With<Enemy>>,
+) -> Option<Vec3> {
+  let mut closest: Option<Vec3> = None;
+
+  for player in enemies.iter() {
+    match closest {
+      Some(p) => {
+        if transform.translation.distance(player.translation) < transform.translation.distance(p) {
+          closest = Some(player.translation);
+        }
+      }
+      None => closest = Some(player.translation),
+    }
+  }
+
+  closest
+}
+
 pub fn spawn_projectiles(
   time: Res<Time>,
   mut commands: Commands,
   asset_server: Res<AssetServer>,
   mut player_query: Query<(Entity, &Player, &Transform, &mut Gun)>,
+  enemy_query: Query<&Transform, With<Enemy>>,
 ) {
   let mut rng = thread_rng();
   let random_angle: f32 = rng.gen_range(0.0..std::f32::consts::PI * 2.0);
-
-  let direction = Vec2::new(random_angle.cos(), random_angle.sin());
+  let random_direction = Vec3::new(random_angle.cos(), random_angle.sin(), 0.0);
 
   for (_, _, player_transform, mut gun) in player_query.iter_mut() {
+    let closest_target = closest_enemy(player_transform, &enemy_query).unwrap_or(random_direction);
+    let direction = (closest_target - player_transform.translation).normalize_or_zero();
+
     gun.cooldown.tick(time.delta());
 
     let mut new_transform = Transform::from_translation(player_transform.translation);
@@ -46,7 +70,7 @@ pub fn spawn_projectiles(
         ActiveEvents::COLLISION_EVENTS,
         RigidBody::Dynamic,
         Velocity {
-          linvel: direction * 400.0,
+          linvel: Vec2::new(direction.x, direction.y) * 400.0,
           angvel: 0.0,
         },
         Collider::ball(3.),

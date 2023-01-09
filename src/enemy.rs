@@ -199,7 +199,7 @@ pub fn enemy_movement(
       EnemyMovement::Homing => {
         let closest_player = closest_player(&transform, &players);
 
-        let speed = 70.0;
+        let speed = 60.0;
 
         match closest_player {
           Some(player) => {

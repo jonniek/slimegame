@@ -85,8 +85,10 @@ pub fn create_map_boundary(commands: &mut Commands) {
         Transform::from_translation(Vec3::new(translate.0, translate.1, translate.2)),
       ),
       Collider::cuboid(cuboid.0, cuboid.1),
+      Sensor,
+      CollidingEntities::default(),
       RigidBody::Fixed,
-      CollisionGroups::new(Group::GROUP_6, Group::GROUP_1),
+      CollisionGroups::new(Group::GROUP_6, Group::ALL),
     ));
   }
 }

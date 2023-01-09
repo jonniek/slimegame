@@ -33,6 +33,7 @@ impl Plugin for Level1Plugin {
           .with_system(generic_spawner)
           .with_system(kill_enemy)
           .with_system(systems::handle_collision)
+          .with_system(systems::deal_red_zone_dmg)
           .with_system(end_condition),
       )
       // When exiting the state, despawn everything that was spawned for this screen

@@ -87,6 +87,7 @@ pub fn spawn_enemy(
       movement,
       Enemy,
       Health::new(health),
+      ActiveEvents::COLLISION_EVENTS,
       CollisionGroups::new(Group::GROUP_3, Group::ALL),
       SpriteSheetBundle {
         texture_atlas,
@@ -105,7 +106,7 @@ pub fn spawn_enemy(
         linear_damping: 0.0,
         angular_damping: 100000.0,
       },
-      Collider::ball(10.),
+      Collider::ball(12.),
       Restitution::coefficient(0.7),
     ));
 }

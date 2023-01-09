@@ -5,9 +5,9 @@ use crate::Action;
 use crate::DamageEvent;
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug,Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LightningGunConfig {
   pub cooldown: f32,
   pub damage: f32,

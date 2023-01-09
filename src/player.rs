@@ -29,6 +29,7 @@ pub fn create_player(
         cooldown: Timer::from_seconds(data.gun_cooldown, TimerMode::Repeating),
         damage: data.gun_damage,
       },
+      Health::new(50.0),
       ActiveEvents::COLLISION_EVENTS,
       CollisionGroups::new(Group::GROUP_1, Group::GROUP_3.union(Group::GROUP_6)),
       SpriteSheetBundle {
@@ -41,9 +42,13 @@ pub fn create_player(
       },
       AnimationTimer(Timer::from_seconds(0.3, TimerMode::Repeating)),
       Velocity::default(),
+      Damping {
+        linear_damping: 0.0,
+        angular_damping: 100000.0,
+      },
       RigidBody::Dynamic,
     ))
-    .insert((Collider::ball(10.), Restitution::coefficient(0.7)))
+    .insert((Collider::ball(12.), Restitution::coefficient(0.7)))
     .insert(input_manager)
     .with_children(|parent| {
       match player {
